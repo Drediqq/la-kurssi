@@ -1,0 +1,20 @@
+body {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: sans-serif;
+    line-height: 1.6;
+    background: #f0f4f8;
+    color: #203040;
+}
+
+h1,
+h2 {
+    color: #005a8d;
+}
+
+pre {
+    background: #fff;
+    padding: 16px;
+    overflow-x: auto;
+}
