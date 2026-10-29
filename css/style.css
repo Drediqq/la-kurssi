@@ -4,17 +4,18 @@ body {
     padding: 0 20px;
     font-family: sans-serif;
     line-height: 1.6;
-    background: #f0f4f8;
-    color: #203040;
+    background: #2B3738;
+    color: #ffffff;
 }
 
 h1,
 h2 {
-    color: #005a8d;
+    font-family: sans-serif;
+    color: #89A2AB;
 }
 
 pre {
-    background: #fff;
+    background: #396B7D;
     padding: 16px;
     overflow-x: auto;
 }
