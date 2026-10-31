@@ -1,21 +1,86 @@
+:root {
+  --primary-bg-color: #2B3738;
+  --secondary-bg-color: #396B7D;
+  --header-bg-color: #162A31;
+  --primary-text-color: #ffffff;
+  --heading-text-color: #89A2AB;
+  --header-link-hover-color: violet;
+  --code-block-bg-color: #396B7D;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
 body {
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 0 20px;
     font-family: sans-serif;
     line-height: 1.6;
-    background: #2B3738;
-    color: #ffffff;
+    background: var(--primary-bg-color);
+    color: var(--primary-text-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 h1,
 h2 {
     font-family: sans-serif;
-    color: #89A2AB;
+    color: var(--heading-text-color);
 }
 
 pre {
-    background: #396B7D;
+    background: var(--code-block-bg-color);
     padding: 16px;
     overflow-x: auto;
+}
+
+a {
+    color: var(--primary-text-color);
+}
+
+header {
+    height: auto;
+    min-height: 47px;
+    background-color: var(--header-bg-color);
+}
+
+.header-links {
+    display: flex;
+    height: 100%;
+    max-width: 800px;
+    margin: 0 auto; 
+    padding: 0;
+    color: var(--primary-text-color);
+}
+
+.header-links a {
+    text-decoration: none;
+    padding: 10px 20px;
+    margin: 0;
+}
+
+.header-links a:hover {
+    background-color: var(--header-link-hover-color);
+}
+
+.content {
+    max-width: 800px;
+    margin: 40px auto; 
+    flex: 1; /* Expands to fill empty space and push footer down */
+    width: 100%;
+}
+
+footer {
+    background-color: var(--header-bg-color);
+    text-align: center;
+    padding: 10px;
+}
+
+.footer-links a {
+    text-decoration: none;
+}
+
+.footer-links a:hover {
+    color: var(--header-link-hover-color);
 }

@@ -5,44 +5,21 @@
     <link rel="stylesheet" href="css/style.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>My Linux Server — Week 1</title>
+    <title>Index</title>
 </head>
 
-<header>Index</header>
 
 <body>
-    <h1>My Linux Server</h1>
-    <p>Welcome to my Week 1 project!</p>
+    <div class="content">
+        <h1>Week 1</h1>
+        <p><a href="week1.html">Week 1 Assignment</a></p>
 
-    <h2>1. Linux distribution and version</h2>
-    <p>Ubuntu 26.04</p>
-
-    <h2>2. What is Nginx, and what does it do on this server?</h2>
-    <p>Nginx is a very popular high performance and lightweight webserver which has multiple applications including serving static web pages like in this case.</p>
-
-    <h2>3. Which commands did I use?</h2>
-    <p>List the commands for installing Nginx, checking its status, and enabling automatic startup. Explain what each does.</p>
-    
-    
-    <p>Updates local packagelist AND installs nginx and vim, which is also important (becouse vim was not installed for some unknown reason) </p>
-    <pre>sudo apt update && sudo apt install nginx vim</pre>
-    
-    
-    <p>Starts nginx, at this point nginx runs and serves page, but it does not survive reboot</p>
-    <pre>sudo systemctl start nginx</pre>
-    
-    
-    <p>"enabling" nginx(.service) makes nginx persistent (so it survives reboot) </p>
-    <pre>systemctl enable nginx</pre>
-    
-    
-    <p>Shows nginx current runtime status</p>
-    <pre>systemctl status nginx</pre>
-    
-
-    <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" >Nano enjoyer? Click here!</a> 
-    <img src="https://i.imgur.com/0qq3ptq.jpeg" alt="Truth">
-    <script src="js/scripts.js.js"></script>
+        <img src="https://i.imgur.com/0qq3ptq.jpeg" alt="Truth">
+        <script src="js/scripts.js"></script>
+    </div>
+  
 </body>
+
+
 
 </html>
