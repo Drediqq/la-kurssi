@@ -16,4 +16,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.body.insertBefore(header, document.body.firstChild);
     document.body.appendChild(footer);
+
+const sectionsToHide = document.querySelectorAll('.whynosudo, .whymulti');
+    sectionsToHide.forEach(el => {
+        el.style.display = 'none';
+    });
+
+    // 3. Your toggle function
+    window.toggleSection = function(className) {
+        const elements = document.querySelectorAll('.' + className);
+        elements.forEach(el => {
+            if (el.style.display === 'none' || el.style.display === '') {
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        });
+    };
 });

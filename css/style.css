@@ -1,14 +1,16 @@
 :root {
-  --primary-bg-color: #2B3738;
-  --secondary-bg-color: #396B7D;
-  --header-bg-color: #162A31;
-  --primary-text-color: #ffffff;
-  --heading-text-color: #89A2AB;
-  --header-link-hover-color: violet;
-  --code-block-bg-color: #396B7D;
+    --primary-bg-color: #2B3738;
+    --secondary-bg-color: #475A5C;
+    --third-bg-color: #5B7476;
+    --header-bg-color: #1F2828;
+    --primary-text-color: #ffffff;
+    --heading-text-color: #89A2AB;
+    --header-link-hover-color: #6F8D90;
+    --code-block-bg-color: #6F8D90;
 }
 
-html, body {
+html,
+body {
     height: 100%;
     margin: 0;
 }
@@ -49,7 +51,7 @@ header {
     display: flex;
     height: 100%;
     max-width: 800px;
-    margin: 0 auto; 
+    margin: 0 auto;
     padding: 0;
     color: var(--primary-text-color);
 }
@@ -66,8 +68,9 @@ header {
 
 .content {
     max-width: 800px;
-    margin: 40px auto; 
-    flex: 1; /* Expands to fill empty space and push footer down */
+    margin: 40px auto;
+    flex: 1;
+    /* Expands to fill empty space and push footer down */
     width: 100%;
 }
 
@@ -83,4 +86,29 @@ footer {
 
 .footer-links a:hover {
     color: var(--header-link-hover-color);
+}
+
+.whynosudo, .whymulti {
+    display: none;
+    background-color: var(--secondary-bg-color);
+    padding: 16px;
+    overflow-x: auto;
+}
+
+.bigwhy {
+    margin-top: 40px;
+}
+
+button {
+
+    h3:hover {
+        color: var(--header-link-hover-color);
+        cursor: pointer;
+    }
+
+    display: block;
+    border: none;
+    background-color: var(--primary-bg-color);
+    color: var(--primary-text-color);
+    text-decoration: underline;
 }

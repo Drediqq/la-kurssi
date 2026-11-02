@@ -26,23 +26,45 @@
             each does.</p>
 
 
-        <p>Updates local packagelist AND installs nginx and vim, which is also important (becouse vim was not installed
+        <p>Updates local packagelist AND installs nginx and vim, which is also important (because vim was not installed
             for some unknown reason) </p>
-        <pre>sudo apt update && sudo apt install nginx vim</pre>
+        <pre>apt update && apt install nginx vim</pre>
 
 
         <p>Starts nginx, at this point nginx runs and serves page, but it does not survive reboot</p>
-        <pre>sudo systemctl start nginx</pre>
+        <pre>systemctl start nginx</pre>
 
 
         <p>"enabling" nginx(.service) makes nginx persistent (so it survives reboot) </p>
-        <pre>sudo systemctl enable nginx</pre>
+        <pre>systemctl enable nginx</pre>
 
 
         <p>Shows nginx current runtime status</p>
         <pre>systemctl status nginx</pre>
 
-    
+
+        <h2 class="bigwhy">Why?</h2>
+        
+        <button onclick="toggleSection('whynosudo')"><h3 class="whytext">Why no sudo?</h3></button>
+        <div class="whynosudo">
+            <p>When looking up documentation or help regarding linux commands, sudo isn't usually added before commands,
+                and you shouldn't add it before every command either due to various reasons. User should also always be aware
+                of what type of user they are using.</p>
+            <p>Therefore I didn't add sudo before commands, incase you need to know which commands need sudo when using a
+            "regular" user, it would be the first three</p>
+        </div>
+
+        
+        <button onclick="toggleSection('whymulti')"><h3 class="whytext"> Why multiple commands for enabling and starting nginx? </h3></button>
+        <div class="whymulti">
+            
+            <p>Its easier to read and for me to comment single commands</p>
+            
+            <p>starting and making nginx persistent can also be done with single command:</p>
+            <pre>systemctl enable nginx --now</pre>
+
+        </div>
+
     </div>
     <script src="js/scripts.js"></script>
 </body>
