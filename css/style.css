@@ -1,0 +1,119 @@
+:root {
+    --primary-bg-color: #2B3738;
+    --secondary-bg-color: #475A5C;
+    --third-bg-color: #5B7476;
+    --header-bg-color: #1F2828;
+    --primary-text-color: #ffffff;
+    --heading-text-color: #89A2AB;
+    --header-link-hover-color: #6F8D90;
+    --code-block-bg-color: #6F8D90;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    font-family: sans-serif;
+    line-height: 1.6;
+    background: var(--primary-bg-color);
+    color: var(--primary-text-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+h1,
+h2 {
+    font-family: sans-serif;
+    color: var(--heading-text-color);
+}
+
+pre {
+    background: var(--code-block-bg-color);
+    padding: 16px;
+    overflow-x: auto;
+}
+
+a {
+    color: var(--primary-text-color);
+}
+
+header {
+    height: auto;
+    min-height: 47px;
+    background-color: var(--header-bg-color);
+}
+
+.header-links {
+    display: flex;
+    height: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0;
+    color: var(--primary-text-color);
+}
+
+.header-links a {
+    text-decoration: none;
+    padding: 10px 20px;
+    margin: 0;
+}
+
+.header-links a:hover {
+    background-color: var(--header-link-hover-color);
+}
+
+.content {
+    max-width: 800px;
+    margin: 40px auto;
+    flex: 1;
+    /* Expands to fill empty space and push footer down */
+    width: 100%;
+}
+
+footer {
+    background-color: var(--header-bg-color);
+    text-align: center;
+    padding: 10px;
+}
+
+.footer-links a {
+    text-decoration: none;
+}
+
+.footer-links a:hover {
+    color: var(--header-link-hover-color);
+}
+
+.whynosudo, .whymulti {
+    display: none;
+    background-color: var(--secondary-bg-color);
+    padding: 16px;
+    overflow-x: auto;
+}
+
+.bigwhy {
+    margin-top: 40px;
+}
+
+button {
+
+    h3:hover {
+        color: var(--header-link-hover-color);
+        cursor: pointer;
+    }
+
+    display: block;
+    border: none;
+    background-color: var(--primary-bg-color);
+    color: var(--primary-text-color);
+    text-decoration: underline;
+}
+.counter { 
+    font-size: 1.2em; 
+    font-weight: bold; 
+    color: var(--primary-text-color); 
+}
