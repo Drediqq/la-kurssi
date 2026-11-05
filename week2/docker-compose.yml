@@ -1,0 +1,40 @@
+services:
+  web:
+    build: .
+    container_name: flask_container
+    restart: always
+    ports:
+      - "127.0.0.1:5000:5000"
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_PORT=${DB_PORT}
+    volumes:
+      - .:/app
+    networks:
+      - shared-network
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:latest
+    container_name: mariadb_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - shared-network
+
+volumes:
+  mariadb_data:
+
+networks:
+  shared-network:
+    external: true
