@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt gunicorn
 COPY . .
 
 # Run with Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "counter:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "week2.counter:app"]
