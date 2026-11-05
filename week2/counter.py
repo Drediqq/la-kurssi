@@ -64,6 +64,8 @@ def index():
     # Sends count to html <- definitely not sending vampires
     return render_template('week2.html', count=count)
 
-if __name__ == '__main__':
+with app.app_context():
     init_db()
+
+if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
