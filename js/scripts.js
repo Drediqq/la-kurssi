@@ -4,14 +4,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     header.innerHTML = `
         <div class="header-links">
-            <a href="index.html">Index</a>
-            <a href="week1.html">Week 1</a>
+            <a href="/index.html">Index</a>
+            <a href="/week1/week1.html">Week 1</a>
             <a href="/week2/">Week 2</a>
         </div>
     `;
     footer.innerHTML = `
         <div class="footer-links">
-            <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank">Nano enjoyer? Click here!</a>
+            <a class="gitlink" href="https://github.com/Drediqq/la-kurssi" target="_blank"><i class="fa-brands fa-github"></i>Git</a>
+            
+            <a class="ytlink" href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank">Nano enjoyer? Click here!</a>
         </div>
     `;
 

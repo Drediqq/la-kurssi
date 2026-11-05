@@ -80,12 +80,38 @@ footer {
     padding: 10px;
 }
 
+/* The wrapper container gets the flex & relative positioning */
+.footer-links {
+    display: flex;
+    align-items: center;
+    position: relative; /* Crucial: allows absolute centering inside */
+    width: 100%;
+    padding: 10px 0;
+}
+
+/* General styles for links */
 .footer-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px; /* Adds a nice gap between the GitHub icon and "Git" text */
     text-decoration: none;
+    color: inherit;
 }
 
 .footer-links a:hover {
     color: var(--header-link-hover-color);
+}
+
+/* Git link stays naturally on the left */
+.gitlink {
+    margin-left: 15px;
+}
+
+/* YouTube link is locked to the exact center */
+.ytlink {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .whynosudo, .whymulti {
