@@ -5,7 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     header.innerHTML = `
         <div class="header-links">
             <a href="index.html">Index</a>
-            <a href="week1.html">Week 1 Assignment</a>
+            <a href="week1.html">Week 1</a>
+            <a href="week2.html">Week 2</a>
         </div>
     `;
     footer.innerHTML = `
