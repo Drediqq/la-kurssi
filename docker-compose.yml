@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   web:
     build: .
@@ -14,8 +12,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_PORT=${DB_PORT}
     volumes:
-      - ./css:/app/css
-      - ./js:/app/js
+      - .:/app
     networks:
       - shared-network
 
