@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-WORKDIR /app
+WORKDIR /app/week2
 
 # Install dependencies required for MariaDB
 RUN apt-get update && apt-get install -y \
@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt gunicorn
 COPY . .
 
 # Run with Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "counter_app.counter:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "counter:app"]
