@@ -4,7 +4,7 @@ import mariadb
 
 app = Flask(__name__)
 
-DB_HOST = os.environ.get('DB_HOST', 'db')  # Oletuksena 'db' jos käytetään Docker Compose -verkon palvelunimeä
+DB_HOST = os.environ.get('DB_HOST', 'db') 
 DB_NAME = os.environ.get('DB_NAME', 'testdb')
 DB_USER = os.environ.get('DB_USER', 'root')
 DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
@@ -65,4 +65,4 @@ def index():
 
 if __name__ == '__main__':
     init_db()
-    app.run(host='127.0.0.1', port=5000)
+    app.run(host='0.0.0.0', port=5000)
