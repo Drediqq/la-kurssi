@@ -41,6 +41,8 @@ def init_db():
     except Exception as e:
         print(f"Failed to connect maria: {e} :(")
 
+
+# counter logic
 @app.route('/week2/')
 def index():
     count = 0
