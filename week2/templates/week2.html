@@ -23,17 +23,19 @@
         <p>Mariadb in a docker container</p>
         
         <h3>How does this counter save data?</h3>
-        <p>I used a python script to do some database modification</p>
+        <p>Python script runs with flask in a docker container, which then modifies a table in mariadb which is running in another docker container as mentioned before. nginx now serves 2 static pages and this flask application. </p>
+        <p>Script first creates a table if it doesn't exist into a database specified in secret environment file. When flask is "triggered" it sends signal to the script and then it runs a function which increases count in db by one, when page is loaded. After that script returns a slightly modified html file back to flask which in return renders it</p>
         
         <h3>What happens when virtual machine is rebooted?</h3>
-        <p><a href="">link to video</a></p>
+        <p>Docker containers spin back up due to this line in the docker-compose: "restart: unless-stopped". Database keeps its data aswell due to: "volumes:mariadb_data:/var/lib/mysql" </p>
+        
 
-        <h3>if my epic javascript generated footer doesn't load</h3>
-        <p><a href="https://github.com/Drediqq/la-kurssi" target="_blank"><i class="fa-brands fa-github"></i>Git</a></p>
         
         <h3>What was learned?</h3>
         <p>Make a "staging" server. I had to do alot of small changes to the actual server, even when earlier "iterations" worked flawlessly on my own small local server.</p>
         <p>Don't try to code while tired.</p>
+        <p><a href="https://www.youtube.com/watch?v=h9uFQv3t1AU">Link to a nice relaxing video</a></p>
+        <h3><a href="https://github.com/Drediqq/la-kurssi" target="_blank">If my epic javascript generated footer doesn't load this is a git link</a></h3>
     </div>
     <script src="../../../js/scripts.js"></script>
 </body>
