@@ -130,11 +130,28 @@ echo "=> Nginx success"
 
 # cron
 echo "=> automating script usage..."
-CRON_COMMAND="* * * * * $REPO_DIR/week3/report.sh >/dev/null 2>&1"
+if [ -z "$REPO_DIR" ]; then
+    echo "Error: REPO_DIR is not set." >&2
+    exit 1
+fi
 
-# test if cron_command already exists so there is no duplicates
-(crontab -l 2>/dev/null | grep -F "$REPO_DIR/week3/report.sh") && echo "=> Cron already exists" || \
-(crontab -l 2>/dev/null; echo "$CRON_COMMAND") | crontab -
-echo "=> cron success"
+SCRIPT_PATH="$REPO_DIR/week3/report.sh"
+CRON_COMMAND="* * * * * $SCRIPT_PATH >/dev/null 2>&1"
+
+# make temp file
+TMP_CRON=$(mktemp)
+
+# copy old cron setup to temp
+crontab -l 2>/dev/null > "$TMP_CRON" || true
+
+# check if command is setup alrady
+if grep -Fq "$SCRIPT_PATH" "$TMP_CRON"; then
+    echo "=> cron already ready"
+else
+    echo "$CRON_COMMAND" >> "$TMP_CRON"
+    
+    crontab "$TMP_CRON"
+    echo "=> cron success"
+fi
 
 echo "=> setup complete!"
