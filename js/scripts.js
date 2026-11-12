@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     header.innerHTML = `
         <div class="header-links">
+            <a class="gitlink" href="https://github.com/Drediqq/la-kurssi" target="_blank"><i class="fa-brands fa-github"></i> Git</a>
+
             <a href="/index.html">Index</a>
             <a href="/week1/">Week 1</a>
             <a href="/week2/">Week 2</a>
