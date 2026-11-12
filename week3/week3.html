@@ -4,17 +4,17 @@
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Week 3 – Server Status Report</title>
-
 </head>
+
 
 <body>
     <div class="content">
         <h1>Server Status Report</h1>
         <p>Week 3: Linux command line and Bash scripting</p>
-        <p>TODO: Add your own introduction.</p>
+        <p>Welcome to my javascript autoloading abomination of a week 3 assignment</p>
         <section>
             <h2>Current server status</h2>
 
@@ -60,37 +60,68 @@
             </div>
 
             <p>
-                Disk space status is <strong>OK</strong> below 80% usage
-                and <strong>WARNING</strong> at 80% or above.
+                Disk space status is <strong class="diskok">OK</strong> below 80% usage,
+                <strong class="diskwarn">WARNING</strong> at 80%,
+                and <strong class="diskcrit">CRITICAL</strong> at 95% and above.
             </p>
 
             <p class="note">
                 Bash generates this report once per minute.
-                Wait approximately 1–2 minutes and reload the page
-                to see a new generation time.
+                Wait approximately 1 minute and page will automatically reload ONLY these statistics with some
+                javascript
+                black magic.
             </p>
         </section>
 
         <section>
             <h2>Commands used</h2>
+
             <ul>
+                Displays the servers current date and time in format of my choosing.
                 <li>
-                    <code>date</code>:
-                    displays the current date, time and time zone
-                    using the format specified in the script.
+                    <code>date '+%d.%m.%Y %H:%M'</code>
                 </li>
+                <br>
+                Displays just the timezone in a pretty format.
                 <li>
-                    <code>uptime -p</code>:
-                    displays how long the server has been running.
+                    <code>date '+%:z %Z'</code>
+
                 </li>
+                <br>
+                Displays pretty(-p) uptime without word "up".
                 <li>
-                    <code>df -P / | awk 'NR == 2 {print &#36;5}'</code>:
-                    passes filesystem information to awk, which extracts
-                    the usage percentage from the second row.
+                    <code>uptime -p | sed 's/^up //'</code>:
+
                 </li>
+                <br>
+                First get root disk usage, then pass to awk and print line 5 which is the percentage of used space
+                then remove the "%".
                 <li>
-                    <code>free -m</code>:
-                    displays memory information in mebibytes (MiB).
+                    <code>df -h / | awk 'NR==2 {print $5}' | tr -d '%'</code>:
+
+                </li>
+                <br>
+                Shows easy to read disk usage statistic.
+                disk statistics for root (/) is passed to awk where it extracts from row 2, lines 3(used) and
+                2(total).
+                <li>
+                    <code>df -h / | awk 'NR==2 {print "used: " $3 " / " $2 }'</code>:
+
+                </li>
+                <br>
+                Shows free memory with string MiB added to the end.
+                free -m(ibibytes) is passed to awk which again extracts from row 2 and line 2(total memory).
+                <li>
+                    <code>free -m | awk 'NR==2 {print $2 " MiB"}'</code>:
+
+
+                </li>
+                <br>
+                Same as one before but this time line 7(available)
+                there is also line 4(free) as in its completely free of anything,
+                but available memory represents how much memory is actually usable.
+                <li>
+                    <code>free -m | awk 'NR==2 {print $7 " MiB"}'</code>:
                 </li>
             </ul>
         </section>
@@ -102,24 +133,77 @@
                 and stores the results in Bash variables through command
                 substitution. A function uses an if statement to determine
                 the disk space status.
+
+                Script writes values for each server statistic to different files,
+                which when are read by javascript script and then stats are dynamically
+                updated to the table in html. Most of the bash script is rather simple,
+                most of the values are preparsed to look like I want them to look like.
+                Only more "complex" part is diskusage which is changed to "warning" or "ok"
+                based on value that is returned by df -h / | awk 'NR==2 {print $5}' | tr -d '%' command.
             </p>
+            <h3>How do the stats update</h3>
             <p>
-                The script generates a temporary HTML file and then moves
-                the completed file into place as index.html.
-                Nginx serves this file at /viikko3/.
+                The script writes separate files for each statistic
+                and then overwrites them with new information every minute.
+                Javascript handles the refresh of statistics without reloading the whole page,
+                becouse that would be rather annoying.
+                Nginx serves this pseudodynamic file at (ip)/week3/.
             </p>
+            <h3>Why does the script write multiple files?</h3>
+            <p>Becouse it's very easy to use those files when theres exactly one thing in them it also makes debugging
+                easy.</p>
+            <h3>Disk space function</h3>
             <p>
-                TODO: Explain the disk space function and one example
-                of piping from your own script.
+                Disk usage part of the script is a very simple if else structure,
+                which gets the percentage of used disk space then
+                stripped value is compared to 95 and 80 which determines the output.
+                when value is 80, script writes "WARNING" to a file which is then shown in the table.
+
+            </p>
+            <h3>Piping example</h3>
+
+
+            <p>First we get specifically root disks(/) (-h)uman readable statistics <code>df -h /</code></p>
+            <p>which for example returns something like this:</p>
+            <pre><code>Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p2   98G   22G   72G  24% /</code></pre>
+            <p>So I only care about use% statistic, therefore I'll pipe it to awk</p>
+            <pre><code>df -h / | awk 'NR==2 {print $5}'</code></pre>
+            <p>which then returns:</p>
+            <pre><code>24%</code></pre>
+            <p>This is great and all, but nobody likes % values in their simple math, so I'll pipe it to tr</p>
+            <pre><code>df -h / | awk 'NR==2 {print $5}' | tr -d '%'</code></pre>
+            <p>which then returns:</p>
+            <pre><code>24</code></pre>
+            <p>Now its easy to do some math!</p>
+            <p>
+
             </p>
         </section>
 
         <section>
             <h2>Scheduling</h2>
             <p>
-                TODO: State whether you used cron or a systemd timer.
-                Explain the schedule and how you ensured that it
-                continues after a reboot.
+                I used cron instead of sysd timer, both are rather easy to replicate,
+                but i find crons to be a bit easier and more appropriate for just running a single bash script in very
+                short timer. As long as cron is enabled as sysd service, crons will run when specified.
+            <p>This is the current cron setup,
+                It runs every minute of every hour of every day of every week of every year forever:</p>
+
+            <pre><code>* * * * * location/of/script.sh >/dev/null 2>&1<br></code></pre>
+            <p>dev/null 2>&1 stops it to not spam logfiles full of poop</p>
+
+
+            <button onclick="toggleSection('whynosudo')">
+                <h3 class="whytext">Some cron examples</h3>
+            </button>
+            <div class="whynosudo">
+                <h3></h3>
+                <pre><p><code>*/5 * * * * location/of/script.sh<br></code>This would run every 5 minutes</p></pre>
+                <pre><p><code>0 * * * * location/of/script.sh<br></code>This would run every hour</p></pre>
+                <pre><p><code>0 0 * * * location/of/script.sh<br></code>This would run at 00:00 every day</p></pre>
+                <pre><p><code>37 13 6 9 * location/of/script.sh<br></code>This would run at 13:37 on 6. September every year</p></pre>
+            </div>
             </p>
         </section>
 
@@ -128,16 +212,40 @@
 
             <h3>Syntax check and manual execution</h3>
             <p>
-                TODO: Describe the results of running
-                <code>bash -n report.sh</code>
-                and executing the script manually.
+
+                <code>bash -n report.sh</code> 
+                <p>Returns nothing as expected, since syntax is correct on final script. However couple times in testing I forgot some spaces and bash obviously doesn't like that.</p>
+                
+                <br> Manually testing script with chained commands:
+                <br><code>date && cat week3/stats/* && bash week3/report.sh && cat week3/stats/* && date</code>
+                returns:
+            <pre><code>Thu Nov 12 12:50:57 EET 2026
+7077 MiB
+used: 8.6G / 77G
+OK
+12.11.2026 12:48
+7746 MiB
++02:00 EET
+1 day, 17 hours, 13 minutes
+report.sh ok
+7077 MiB
+used: 8.6G / 77G
+OK
+12.11.2026 12:50
+7746 MiB
++02:00 EET
+1 day, 17 hours, 16 minutes
+Thu Nov 12 12:50:57 EET 2026
+</code></pre>
             </p>
 
             <h3>Disk space status tests</h3>
             <p>
-                TODO: Test the status logic using temporary input values.
-                Record your actual results below and restore real disk
-                usage afterwards.
+                This table updates every minute. I added a random number generator to the bash script,
+                which gives out random numbers and updates one of the three rows, depending on what the random value is.
+                <br>Idea is to simulate reading disk status, logic is exactly the same as what was used in stats table
+                above.
+
             </p>
 
             <div class="table-container">
@@ -151,19 +259,19 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>50%</td>
-                            <td>OK</td>
-                            <td>TODO</td>
+                            <td>Loading...</td>
+                            <td class="diskok">OK</td>
+                            <td id="val-disk-usage-50">Loading...</td>
                         </tr>
                         <tr>
-                            <td>80%</td>
-                            <td>WARNING</td>
-                            <td>TODO</td>
+                            <td>Loading...</td>
+                            <td class="diskwarn">WARNING</td>
+                            <td id="val-disk-usage-80">Loading...</td>
                         </tr>
                         <tr>
-                            <td>90%</td>
-                            <td>WARNING</td>
-                            <td>TODO</td>
+                            <td>Loading...</td>
+                            <td class="diskcrit">CRITICAL</td>
+                            <td id="val-disk-usage-95">Loading...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -171,21 +279,35 @@
 
             <h3>Automatic updates</h3>
             <p>
-                TODO: Record the generation times of at least two
-                consecutive automatic updates.
+                If you spend more than a minute in this site, you will see values update automatically, assuming of
+                course javascript is enabled in your browser.
+                To make this work, I also had to disable caching for this page in nginx setup.
             </p>
 
             <h3>Reboot test</h3>
+            <p>Video is done in another virtual machine, it is exactly the same as this server except it has different
+                ip address</p>
             <p>
-                TODO: Record when you rebooted the VM and whether the
-                Week 2 application and Week 3 page opened afterwards.
-                Include evidence that the report continued to update.
+                Moving picture proof of life after reboot
+                <iframe width="760" height="428" src="https://www.youtube.com/embed/dAGsYCPjZqU?si=9tuFH4C09fu1BWnV"
+                    title="YouTube video player" frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             </p>
         </section>
 
         <section>
             <h2>A problem solved or a lesson learned</h2>
-            <p>TODO: Describe one example from your own work.</p>
+            <p>This time I used a testing server instead of doing it straight on main server.
+                It's rather easy to make another virtual machine, just snapshot main and run another instance from the
+                snapshot.
+            </p>
+
+            Small tr example: I wasn't too familiar with tr before since I had only used sed before and I learned
+            <br>if you run <code>uptime -p</code> print would be something like <code>up 2 hours, 8 minutes</code>.
+            <br>I dont want word "up" in this print, now I thought tr is similiar to sed but apparently
+            <br>If you do <code>uptime -p | tr -d 'up'</code> print is going to be <code>2 hors, 8 mintes</code>,
+            becouse it removes all specificed individual characters, not strings. I found this rather funny!
         </section>
     </div>
     <script src="../js/scripts.js"></script>

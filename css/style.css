@@ -165,7 +165,7 @@ button {
 
     display: block;
     border: none;
-    background-color: var(--primary-bg-color);
+    background-color: transparent;
     color: var(--primary-text-color);
     text-decoration: underline;
 }
@@ -212,4 +212,14 @@ code {
     padding: 2px 5px;
     border-radius: 4px;
     overflow-wrap: anywhere;
+}
+
+.diskok {
+    color:rgb(0, 255, 0);
+}
+.diskwarn {
+    color:orange;
+}
+.diskcrit {
+    color:red;
 }
