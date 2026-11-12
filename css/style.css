@@ -1,12 +1,38 @@
 :root {
-    --primary-bg-color: #2B3738;
-    --secondary-bg-color: #475A5C;
-    --third-bg-color: #5B7476;
-    --header-bg-color: #1F2828;
+/* Base Color Palette */
+    --color-1: #BAFEE5;
+    --color-2: #BAF5FE;
+    --color-3: #BAD3FE;
+    --color-4: #FEBAD3;
+    --color-5: #FEE5BA;
+    --color-50: #E6FBFF;
+    --color-100: #BAF5FE;
+    --color-200: #8BEEFD;
+    --color-300: #5EE7FD;
+    --color-400: #31E1FC;
+    --color-500: #04DAFB;
+    --color-600: #03B3CE;
+    --color-700: #028CA1;
+    --color-800: #026474;
+    --color-900: #013D46;
+    --color-950: #001619;
+
+    /* Mapped Theme Variables using the new --color spectrum */
+    --complement-color-1: var(--color-900);
+    --very-dark-bg: var(--color-950);
+    --primary-bg-color: var(--color-900);
+    --secondary-bg-color: var(--color-800);
+    --third-bg-color: var(--color-700);
+    --header-bg-color: var(--color-950);
+    --heading-text-color: var(--color-200);
+    --header-link-hover-color: var(--color-300);
+    --code-block-bg-color: var(--color-800);
+    --light-color-1: var(--color-300);
+    --light-color-2: var(--color-200);
+    --very-light-color-1: var(--color-100);
+    --very-light-color-2: var(--color-50);
+
     --primary-text-color: #ffffff;
-    --heading-text-color: #89A2AB;
-    --header-link-hover-color: #6F8D90;
-    --code-block-bg-color: #6F8D90;
 }
 
 html,
@@ -65,6 +91,7 @@ header {
 
 .header-links a:hover {
     background-color: var(--header-link-hover-color);
+    color: var(--secondary-bg-color)
 }
 
 .content {
@@ -85,7 +112,8 @@ footer {
 .footer-links {
     display: flex;
     align-items: center;
-    position: relative; /* Crucial: allows absolute centering inside */
+    position: relative;
+    /* Crucial: allows absolute centering inside */
     width: 100%;
     padding: 10px 0;
 }
@@ -94,7 +122,8 @@ footer {
 .footer-links a {
     display: inline-flex;
     align-items: center;
-    gap: 6px; /* Adds a nice gap between the GitHub icon and "Git" text */
+    gap: 6px;
+    /* Adds a nice gap between the GitHub icon and "Git" text */
     text-decoration: none;
     color: inherit;
 }
@@ -115,7 +144,8 @@ footer {
     transform: translateX(-50%);
 }
 
-.whynosudo, .whymulti {
+.whynosudo,
+.whymulti {
     display: none;
     background-color: var(--secondary-bg-color);
     padding: 16px;
@@ -135,12 +165,61 @@ button {
 
     display: block;
     border: none;
-    background-color: var(--primary-bg-color);
+    background-color: transparent;
     color: var(--primary-text-color);
     text-decoration: underline;
 }
-.counter { 
-    font-size: 1.2em; 
-    font-weight: bold; 
-    color: var(--primary-text-color); 
+
+.counter {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--primary-text-color);
+}
+
+section {
+    h2, h3 {
+        color:var(--very-light-color-2)
+    }
+    margin: 24px 0;
+    padding: 24px;
+    background: var(--code-block-bg-color);
+    border-radius: 12px;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th,
+td {
+    color: var(--very-light-color-1);
+    border: 1px solid var(--primary-bg-color);
+    padding: 12px;
+    text-align: left;
+}
+
+th {
+    background: var(--third-bg-color);
+}
+
+code {
+    background: var(--primary-bg-color);
+    padding: 2px 5px;
+    border-radius: 4px;
+    overflow-wrap: anywhere;
+}
+
+.diskok {
+    color:rgb(0, 255, 0);
+}
+.diskwarn {
+    color:orange;
+}
+.diskcrit {
+    color:red;
 }
