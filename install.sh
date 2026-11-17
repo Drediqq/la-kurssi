@@ -3,6 +3,25 @@
 # exit if shit hits the fan
 set -e
 
+# update and install core dependencies
+####################################################################################################
+echo "=> installing system dependencies..."
+sudo apt-get update
+sudo apt-get install -y \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release \
+    rsync \
+    nginx \
+    docker-compose
+
+# enable docker demon
+sudo systemctl enable --now docker
+# add user to docker group
+sudo usermod -aG docker $USER
+
+####################################################################################################
 
 # get directory
 ####################################################################################################
@@ -54,43 +73,43 @@ sudo cp -r "$DOCKER_DIR/"* /opt/
 APP_OPT_DIR="/opt/w2-app"
 
 if [ -f "$APP_OPT_DIR/.env" ]; then
-    echo "=>.env exists, skipping cred setup"
+    echo "!= .env exists, skipping cred setup"
 else
 
 # input env values
 echo "############################"
-echo "=>#####     env conf     #####"
+echo "#####     env conf     #####"
 echo "############################"
 
 # db name
-read -p "mysql database name: " DB_NAME
+read -p "?= mysql database name: " DB_NAME
 DB_NAME=${DB_NAME:-my_database}
 
 # db user
-read -p "mysql User: " DB_USER
+read -p "?= mysql user: " DB_USER
 DB_USER=${DB_USER:-my_user}
 
 # ([s]ilent) password for user
-read -sp "mysql password: " DB_PASSWORD
+read -sp "?= mysql password: " DB_PASSWORD
 echo ""
 while [ -z "$DB_PASSWORD" ]; do
-    echo "empty password, no can do."
-    read -sp "mysql password: " DB_PASSWORD
+    echo "!= empty password, no can do."
+    read -sp "?= mysql password: " DB_PASSWORD
     echo ""
 done
 
 # [s]ilent password for root
-read -sp "mysql root password: " MYSQL_ROOT_PASSWORD
+read -sp "?= mysql root password: " MYSQL_ROOT_PASSWORD
 echo ""
 while [ -z "$MYSQL_ROOT_PASSWORD" ]; do
-    echo ".. idiot"
-    read -sp "mysql root password: " MYSQL_ROOT_PASSWORD
+    echo "!= .. idiot"
+    read -sp "?= mysql root password: " MYSQL_ROOT_PASSWORD
     echo ""
 done
 
 
 # write env file
-echo "=> Writing configuration to $APP_OPT_DIR/.env..."
+echo "=> writing $APP_OPT_DIR/.env..."
 sudo bash -c "cat > $APP_OPT_DIR/.env" <<EOF
 MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
 MYSQL_DATABASE=$DB_NAME
@@ -134,7 +153,7 @@ echo "=> Nginx success"
 
 # cron
 ####################################################################################################
-echo "=> automating script usage..."
+echo "=> automating scripts..."
 
 
 CRON_FILE="/etc/cron.d/lakurssi-report"
