@@ -121,7 +121,7 @@ sudo docker compose up -d
 ####################################################################################################
 echo "=> updating enjinks..."
 sudo cp "$CFG_DIR/lakurssi.conf" /etc/nginx/sites-available/lakurssi
-sudo rm /etc/nginx/sites-enabled/default
+sudo rm -f /etc/nginx/sites-enabled/default
 sudo ln -sf /etc/nginx/sites-available/lakurssi /etc/nginx/sites-enabled/
 ####################################################################################################
 
