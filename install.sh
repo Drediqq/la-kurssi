@@ -4,8 +4,6 @@
 set -e
 
 
-
-
 # get directory
 ####################################################################################################
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -36,7 +34,7 @@ chmod +x "$SCR_DIR/report.sh"
 # copy repo content
 ####################################################################################################
 echo "=> copying web content.."
-sudo cp -r "$WEB_DIR/"* /var/www/html/
+sudo cp -r "$WEB_DIR/"* /var/www/html/lakurssi
 
 echo "=> copying scripts.."
 sudo cp -r "$SCR_DIR/"* /usr/local/bin
@@ -58,6 +56,7 @@ APP_OPT_DIR="/opt/w2-app"
 if [ -f "$APP_OPT_DIR/.env" ]; then
     echo "=>.env exists, skipping cred setup"
 else
+
 # input env values
 echo "############################"
 echo "=>#####     env conf     #####"
@@ -122,6 +121,7 @@ sudo docker compose up -d
 ####################################################################################################
 echo "=> updating enjinks..."
 sudo cp "$CFG_DIR/lakurssi.conf" /etc/nginx/sites-available/lakurssi
+sudo rm /etc/nginx/sites-enabled/default
 sudo ln -sf /etc/nginx/sites-available/lakurssi /etc/nginx/sites-enabled/
 ####################################################################################################
 
@@ -135,29 +135,19 @@ echo "=> Nginx success"
 # cron
 ####################################################################################################
 echo "=> automating script usage..."
-if [ -z "$REPO_DIR" ]; then
-    echo "REPO_DIR not set." >&2
-    exit 1
-fi
-
-SCRIPT_PATH="/usr/local/bin"
-CRON_COMMAND="* * * * * $SCRIPT_PATH/report.sh >/dev/null 2>&1"
-
-# make temp file
-TMP_CRON=$(mktemp)
-
-# copy old cron setup to temp
-crontab -l 2>/dev/null > "$TMP_CRON" || true
 
 
-# check if command is setup alrady
-if grep -Fq "$CRON_COMMAND" "$TMP_CRON"; then
-    echo "=> cron already ready"
-else
-    echo "$CRON_COMMAND" >> "$TMP_CRON"
-    crontab "$TMP_CRON"
-    echo "=> cron success"
-fi
+CRON_FILE="/etc/cron.d/lakurssi-report"
+
+# make report run as root
+sudo bash -c "cat > $CRON_FILE" <<EOF
+* * * * * root /usr/local/bin/report.sh >/dev/null 2>&1
+EOF
+
+# strict permissions
+sudo chmod 644 "$CRON_FILE"
+
+echo "=> cron success"
 ####################################################################################################
 
 echo "=> setup complete!"

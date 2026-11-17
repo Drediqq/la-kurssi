@@ -7,12 +7,12 @@ services:
       - "127.0.0.1:5000:5000"
     environment:
       - DB_HOST=db
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_PORT=${DB_PORT}
+      - DB_PORT=3306
+      - DB_NAME=${MYSQL_DATABASE}
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
     volumes:
-      - /var/www/html/week2:/app
+      - /var/www/html/lakurssi/week2:/app
     networks:
       - shared-network
     depends_on:
