@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # directory 
-readonly BASE_DIR="$HOME/la-kurssi/week3"
+readonly BASE_DIR="/var/www/html/week3"
 readonly WEB_DIR="$BASE_DIR/stats"
 
 # create directory if it doesn't exist

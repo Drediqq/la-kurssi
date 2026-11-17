@@ -6,13 +6,13 @@ services:
     ports:
       - "127.0.0.1:5000:5000"
     environment:
-      - DB_HOST=${DB_HOST}
+      - DB_HOST=db
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_PORT=${DB_PORT}
     volumes:
-      - .:/app
+      - /var/www/html/week2:/app
     networks:
       - shared-network
     depends_on:
@@ -20,13 +20,16 @@ services:
 
   db:
     image: mariadb:latest
-    container_name: mariadb_container
+    container_name: mariadb_prime
     restart: unless-stopped
+    ports:
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    command: --server-id=1 --log-bin=mysql-bin --binlog-format=ROW --bind-address=0.0.0.0
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:
