@@ -20,6 +20,7 @@ MYSQL_DATABASE=${MYSQL_DATABASE:-db}
 MYSQL_USER=${MYSQL_USER:-user}
 REPLICA_USER=${DB_REPLICA_USER:-replicauser}
 REPLICA_PASSWORD=${DB_REPLICA_PASSWORD:-verystrongpassword}
+PEER_IP=${PEER_DB_HOST:-}
 
 echo "initing db '$MYSQL_DATABASE' on $DB_HOST"
 
@@ -45,5 +46,13 @@ CREATE USER '${REPLICA_USER}'@'%' IDENTIFIED BY '${REPLICA_PASSWORD}';
 GRANT REPLICATION SLAVE ON *.* TO '${REPLICA_USER}'@'%';
 FLUSH PRIVILEGES;
 EOF
+
+echo "=> Creating replication user on Master..."
+sudo docker compose exec -T db mariadb -u "root" -p"$MYSQL_ROOT_PASSWORD" <<EOF
+CREATE USER IF NOT EXISTS '${DB_REPLICA_USER}'@'%' IDENTIFIED BY '${DB_REPLICA_PASSWORD}';
+GRANT REPLICATION SLAVE ON *.* TO '${DB_REPLICA_USER}'@'%';
+FLUSH PRIVILEGES;
+EOF
+
 
 echo "=>db init success"

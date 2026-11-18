@@ -71,6 +71,9 @@ while [ -z "$DB_REPLICA_PASSWORD" ]; do
     echo ""
 done
 
+read -p "?= replication database IP: " PEER_DB_HOST
+PEER_DB_HOST=${PEER_DB_HOST:-}
+
 # write env file
 echo "=> writing $APP_DIR/.env..."
 sudo bash -c "cat > $APP_DIR/.env" <<EOF
@@ -82,6 +85,7 @@ DB_REPLICA_USER=$DB_REPLICA_USER
 DB_REPLICA_PASSWORD=$DB_REPLICA_PASSWORD
 DB_HOST=db
 DB_PORT=3306
+PEER_DB_HOST=$PEER_DB_HOST
 EOF
 
 # permissions to env for root only

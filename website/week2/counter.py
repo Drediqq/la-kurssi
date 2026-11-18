@@ -65,7 +65,25 @@ def index():
     
     # Sends count to html <- definitely not sending vampires
     return render_template('week2.html', count=count)
-
+    
+@app.route('/week4/')
+def week4_index():
+    count = 0
+    try:
+        conn = get_replica_connection()
+        cursor = conn.cursor()
+        
+        # Read-only from replica
+        cursor.execute('SELECT count FROM visits WHERE id = 1')
+        count = cursor.fetchone()[0]
+        
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Database error (Replica): {e}")
+        count = -1
+    
+    return render_template('week4.html', count=count)
 with app.app_context():
     init_db()
 
