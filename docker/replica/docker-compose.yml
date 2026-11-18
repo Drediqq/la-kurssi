@@ -4,7 +4,7 @@ services:
     container_name: flask_replica
     restart: unless-stopped
     ports:
-      - "127.0.0.1:5000:5000"
+      - "127.0.0.1:5010:5010"
     environment:
       - DB_HOST=db
       - DB_PORT=3306
@@ -23,7 +23,7 @@ services:
     container_name: mariadb_replica
     restart: unless-stopped
     ports:
-      - "3306:3306"
+      - "3310:3310"
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}

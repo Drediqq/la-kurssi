@@ -8,7 +8,7 @@ DB_HOST = os.environ.get('DB_HOST', 'db')
 DB_NAME = os.environ.get('DB_NAME', 'testdb')
 DB_USER = os.environ.get('DB_USER', 'root')
 DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
-DB_PORT = int(os.environ.get('DB_PORT', 3306))
+DB_PORT = int(os.environ.get('DB_PORT', 3310))
 
 def get_db_connection():
     # Connects to db running in docker
@@ -43,4 +43,4 @@ def index():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5010)

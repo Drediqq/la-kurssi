@@ -63,11 +63,11 @@ done
 read -p "?= replica user: " DB_REPLICA_USER
 DB_REPLICA_USER=${DB_REPLICA_USER:-replica_user}
 
-read -sp "?= replica password: " REPLICA_PASSWORD
+read -sp "?= replica password: " DB_REPLICA_PASSWORD
 echo ""
-while [ -z "$REPLICA_PASSWORD" ]; do
+while [ -z "$DB_REPLICA_PASSWORD" ]; do
     echo "!= no password, unacceptable."
-    read -sp "?= replica password: " REPLICA_PASSWORD
+    read -sp "?= replica password: " DB_REPLICA_PASSWORD
     echo ""
 done
 
@@ -78,6 +78,8 @@ MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
 MYSQL_DATABASE=$DB_NAME
 MYSQL_USER=$DB_USER
 MYSQL_PASSWORD=$DB_PASSWORD
+DB_REPLICA_USER=$DB_REPLICA_USER
+DB_REPLICA_PASSWORD=$DB_REPLICA_PASSWORD
 DB_HOST=db
 DB_PORT=3306
 EOF
