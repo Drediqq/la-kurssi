@@ -38,7 +38,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WEB_DIR=$REPO_DIR/website
 SCR_DIR=$REPO_DIR/scripts
 CFG_DIR=$REPO_DIR/configs
-DOCKER_DIR=$REPO_DIR/docker
+
 echo "=> repo path : $REPO_DIR"
 ####################################################################################################
 

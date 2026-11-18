@@ -1,4 +1,6 @@
 #!/bin/bash
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOCKER_DIR=$REPO_DIR/docker
 
 read -p "?= install master or slave? [M/s]: " -r INSTALL_MASTER
 INSTALL_MASTER=${INSTALL_MASTER:-M}
