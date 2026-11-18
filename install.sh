@@ -53,6 +53,7 @@ chmod +x "$SCR_DIR/report.sh"
 # copy repo content
 ####################################################################################################
 echo "=> copying web content.."
+sudo mkdir -p /var/www/html/lakurssi
 sudo cp -r "$WEB_DIR/"* /var/www/html/lakurssi
 
 echo "=> copying scripts.."
@@ -131,7 +132,16 @@ fi
 # start docker containers
 ####################################################################################################
 cd /opt/w2-app
+sudo docker network create shared-network || true
 sudo docker compose up -d 
+echo "=> waiting for mariadb"
+until sudo docker exec mariadb_prime mariadb-admin ping -h"localhost" -u"root" -p"$MYSQL_ROOT_PASSWORD" --silent 2>/dev/null; do
+    echo -n "."
+    sleep 5
+done
+echo "=> maria up"
+sudo chmod +x init_db.sh
+sudo bash init_db.sh
 ####################################################################################################
 
 
