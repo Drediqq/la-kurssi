@@ -1,0 +1,46 @@
+from flask import Flask, render_template
+import os
+import mariadb
+
+app = Flask(__name__)
+
+DB_HOST = os.environ.get('DB_HOST', 'db') 
+DB_NAME = os.environ.get('DB_NAME', 'testdb')
+DB_USER = os.environ.get('DB_USER', 'root')
+DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
+DB_PORT = int(os.environ.get('DB_PORT', 3306))
+
+def get_db_connection():
+    # Connects to db running in docker
+    conn = mariadb.connect(
+        host=DB_HOST,
+        database=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        port=DB_PORT
+    )
+    return conn
+
+# counter logic
+@app.route('/week4/')
+def index():
+    count = 0
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT count FROM visits WHERE id = 1')
+        count = cursor.fetchone()[0]
+        
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Database error: {e}")
+        count = -1
+    
+    # Sends count to html <- definitely not sending vampires
+    return render_template('week4.html', count=count)
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)

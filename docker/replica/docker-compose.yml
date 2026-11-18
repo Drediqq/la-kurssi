@@ -1,0 +1,44 @@
+services:
+  web:
+    build: .
+    container_name: flask_replica
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5000:5000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=${MYSQL_DATABASE}
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - /var/www/html/lakurssi/week4:/app
+    networks:
+      - shared-network
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:latest
+    container_name: mariadb_replica
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    command: --server-id=2 --read-only=1 --bind-address=0.0.0.0
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - shared-network
+
+volumes:
+  mariadb_data:
+
+networks:
+  shared-network:
+    external: true

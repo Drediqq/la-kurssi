@@ -3,19 +3,28 @@
 # exit if shit hits the fan
 set -e
 
+
 # update and install core dependencies
 ####################################################################################################
-echo "=> installing system dependencies..."
-sudo apt-get update
-sudo apt-get install -y \
-    ca-certificates \
-    curl \
-    gnupg \
-    lsb-release \
-    rsync \
-    nginx \
-    docker-compose
+PACKAGES=(ca-certificates curl gnupg lsb-release rsync nginx docker-compose-v2)
+MISSING_PACKAGES=()
 
+# check which packages are installed already
+for pkg in "${PACKAGES[@]}"; do
+    
+    if ! dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "install ok installed"; then
+        MISSING_PACKAGES+=("$pkg")
+    fi
+done
+# if something is not installed, install them, otherwise skip installation
+if [ ${#MISSING_PACKAGES[@]} -gt 0 ]; then
+    echo "=> installing missing: ${MISSING_PACKAGES[*]}"
+    sudo apt-get update
+    sudo apt-get install -y "${MISSING_PACKAGES[@]}"
+else
+    echo "!= all good, skipping install"
+fi
+    
 # enable docker demon
 sudo systemctl enable --now docker
 # add user to docker group
@@ -61,88 +70,14 @@ sudo cp -r "$SCR_DIR/"* /usr/local/bin
 ####################################################################################################
 
 
+read -p "?= install Docker containers? [Y/n]: " -r INSTALL_DOCKER
+INSTALL_DOCKER=${INSTALL_DOCKER:-Y}
 
-# docker
-####################################################################################################
-sudo cp -r "$DOCKER_DIR/"* /opt/
-####################################################################################################
-
-
-
-# .env
-####################################################################################################
-APP_OPT_DIR="/opt/w2-app"
-
-if [ -f "$APP_OPT_DIR/.env" ]; then
-    echo "!= .env exists, skipping cred setup"
+if [[ "$INSTALL_DOCKER" =~ ^[Yy]$ ]]; then
+    sudo bash docker_install.sh
 else
-
-# input env values
-echo "############################"
-echo "#####     env conf     #####"
-echo "############################"
-
-# db name
-read -p "?= mysql database name: " DB_NAME
-DB_NAME=${DB_NAME:-my_database}
-
-# db user
-read -p "?= mysql user: " DB_USER
-DB_USER=${DB_USER:-my_user}
-
-# ([s]ilent) password for user
-read -sp "?= mysql password: " DB_PASSWORD
-echo ""
-while [ -z "$DB_PASSWORD" ]; do
-    echo "!= empty password, no can do."
-    read -sp "?= mysql password: " DB_PASSWORD
-    echo ""
-done
-
-# [s]ilent password for root
-read -sp "?= mysql root password: " MYSQL_ROOT_PASSWORD
-echo ""
-while [ -z "$MYSQL_ROOT_PASSWORD" ]; do
-    echo "!= .. idiot"
-    read -sp "?= mysql root password: " MYSQL_ROOT_PASSWORD
-    echo ""
-done
-
-
-# write env file
-echo "=> writing $APP_OPT_DIR/.env..."
-sudo bash -c "cat > $APP_OPT_DIR/.env" <<EOF
-MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
-MYSQL_DATABASE=$DB_NAME
-MYSQL_USER=$DB_USER
-MYSQL_PASSWORD=$DB_PASSWORD
-DB_HOST=db
-DB_PORT=3306
-EOF
-
-
-# permissions to env for root only
-sudo chmod 600 "$APP_OPT_DIR/.env"
-echo "=> .env success"
+    echo "=> docker install skipped"
 fi
-####################################################################################################
-
-
-
-# start docker containers
-####################################################################################################
-cd /opt/w2-app
-sudo docker network create shared-network || true
-sudo docker compose up -d 
-echo "=> waiting for mariadb"
-until sudo docker exec mariadb_prime mariadb-admin ping -h"localhost" -u"root" -p"$MYSQL_ROOT_PASSWORD" --silent 2>/dev/null; do
-    echo -n "."
-    sleep 5
-done
-echo "=> maria up"
-sudo chmod +x init_db.sh
-sudo bash init_db.sh
-####################################################################################################
 
 
 
