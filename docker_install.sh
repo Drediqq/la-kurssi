@@ -71,8 +71,16 @@ while [ -z "$DB_REPLICA_PASSWORD" ]; do
     echo ""
 done
 
-read -p "?= replication database IP: " PEER_DB_HOST
-PEER_DB_HOST=${PEER_DB_HOST:-}
+if [ $ROLE = 'replica' ]; then
+    read -p "?= replication database IP: " PEER_DB_HOST
+    PEER_DB_HOST=${PEER_DB_HOST:-}
+
+    read -p "?= replica database name: " PEER_DB_NAME
+    PEER_DB_NAME=${PEER_DB_NAME:-}
+else
+    PEER_DB_HOST=""
+    PEER_DB_NAME=""
+fi
 
 # write env file
 echo "=> writing $APP_DIR/.env..."
@@ -86,6 +94,8 @@ DB_REPLICA_PASSWORD=$DB_REPLICA_PASSWORD
 DB_HOST=db
 DB_PORT=3306
 PEER_DB_HOST=$PEER_DB_HOST
+PEER_DB_NAME=$PEER_DB_NAME
+SITE_MODE=$ROLE
 EOF
 
 # permissions to env for root only

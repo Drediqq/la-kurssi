@@ -11,6 +11,10 @@ services:
       - DB_NAME=${MYSQL_DATABASE}
       - DB_USER=${MYSQL_USER}
       - DB_PASSWORD=${MYSQL_PASSWORD}
+      - REPLICA_USER=${DB_REPLICA_USER}
+      - REPLICA_PASSWORD=${DB_REPLICA_PASSWORD}
+      - REPLICA_DB=${PEER_DB_NAME}
+      - SITE_MODE=${SITE_MODE}
     volumes:
       - /var/www/html/lakurssi/week2:/app
     networks:
@@ -20,7 +24,7 @@ services:
 
   db:
     image: mariadb:latest
-    container_name: mariadb_prime
+    container_name: mariadb_replica
     restart: unless-stopped
     ports:
       - "3306:3306"

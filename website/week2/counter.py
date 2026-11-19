@@ -10,6 +10,14 @@ DB_USER = os.environ.get('DB_USER', 'root')
 DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
 DB_PORT = int(os.environ.get('DB_PORT', 3306))
 
+
+REPLICA_HOST = os.environ.get('REPLICA_HOST', DB_HOST)
+REPLICA_DB = os.environ.get('PEER_DB_NAME', 'testdb')
+REPLICA_USER = os.environ.get('DB_REPLICA_USER', DB_USER)
+REPLICA_PASSWORD = os.environ.get('DB_REPLICA_PASSWORD', DB_PASSWORD)
+SITE_MODE = os.environ.get('SITE_MODE', 'master')
+
+
 def get_db_connection():
     # Connects to db running in docker
     conn = mariadb.connect(
@@ -20,6 +28,20 @@ def get_db_connection():
         port=DB_PORT
     )
     return conn
+
+# connect to replica if server is set to replication
+def get_replica_connection():
+    if SITE_MODE == 'master':
+        return get_db_connection()
+    else:
+        conn = mariadb.connect(
+            host=REPLICA_HOST,
+            database=REPLICA_NAME,
+            user=REPLICA_USER,
+            password=REPLICA_PASSWORD,
+            port=DB_PORT,
+        )
+        return conn
 
 def init_db():
     # Makes a table if it doesn't exist
@@ -60,7 +82,7 @@ def index():
         cursor.close()
         conn.close()
     except Exception as e:
-        print(f"Database error: {e}")
+        print(f"db error: {e}")
         count = -1
     
     # Sends count to html <- definitely not sending vampires
@@ -73,14 +95,14 @@ def week4_index():
         conn = get_replica_connection()
         cursor = conn.cursor()
         
-        # Read-only from replica
+        # read from replica
         cursor.execute('SELECT count FROM visits WHERE id = 1')
         count = cursor.fetchone()[0]
         
         cursor.close()
         conn.close()
     except Exception as e:
-        print(f"Database error (Replica): {e}")
+        print(f"replca db error {e}")
         count = -1
     
     return render_template('week4.html', count=count)

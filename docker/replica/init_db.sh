@@ -41,27 +41,23 @@ WHERE NOT EXISTS (SELECT 1 FROM visits);
 CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
 GRANT SELECT, UPDATE ON \`${MYSQL_DATABASE}\`.visits TO '${MYSQL_USER}'@'%';
 FLUSH PRIVILEGES;
-
-CREATE USER '${REPLICA_USER}'@'%' IDENTIFIED BY '${REPLICA_PASSWORD}';
-GRANT REPLICATION SLAVE ON *.* TO '${REPLICA_USER}'@'%';
-FLUSH PRIVILEGES;
 EOF
 
-echo "=> Replica to Master at $PEER_IP..."
-sudo docker compose exec -T db mariadb -u "root" -p"$MYSQL_ROOT_PASSWORD" <<EOF
+# replicate slave setup
+if [ -n "$PEER_IP" ]; then
+    echo "=> Replica to Master at $PEER_IP..."
+    sudo docker compose exec -T db mariadb -u "root" -p"$MYSQL_ROOT_PASSWORD" <<EOF
 STOP SLAVE;
 CHANGE MASTER TO
   MASTER_HOST='$PEER_IP',
-  MASTER_USER='${DB_REPLICA_USER}',
-  MASTER_PASSWORD='${DB_REPLICA_PASSWORD}',
+  MASTER_USER='${REPLICA_USER}',
+  MASTER_PASSWORD='${REPLICA_PASSWORD}',
   MASTER_USE_GTID=1;
 START SLAVE;
 EOF
-    echo "=> Replication pipeline established!"
-
-echo "=> Replication success <- $PEER_IP!"
+    echo "=> Replication ready <- $PEER_IP!"
 else
-    echo "=> replication failure"
+    echo "!= PEER_DB_HOST empty, skipping CHANGE MASTER"
 fi
 
-echo "=>db init success"
+echo "=> db init success"
