@@ -36,7 +36,6 @@ services:
     command: --server-id=2 --log-bin=mysql-bin --binlog-format=ROW --gtid-domain-id=1 --read-only=1 --bind-address=0.0.0.0
     volumes:
       - mariadb_data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - shared-network
 
