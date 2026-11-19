@@ -11,6 +11,7 @@ services:
       - DB_NAME=${MYSQL_DATABASE}
       - DB_USER=${MYSQL_USER}
       - DB_PASSWORD=${MYSQL_PASSWORD}
+      - SITE_MODE=${SITE_MODE}
     volumes:
       - /var/www/html/lakurssi/week2:/app
     networks:
