@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# exit if shit hits the fan
+set -e
+
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOCKER_DIR=$REPO_DIR/docker
 
