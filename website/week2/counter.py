@@ -12,9 +12,9 @@ DB_PORT = int(os.environ.get('DB_PORT', 3306))
 
 
 REPLICA_HOST = os.environ.get('REPLICA_HOST', DB_HOST)
-REPLICA_DB = os.environ.get('PEER_DB_NAME', 'testdb')
-REPLICA_USER = os.environ.get('DB_REPLICA_USER', DB_USER)
-REPLICA_PASSWORD = os.environ.get('DB_REPLICA_PASSWORD', DB_PASSWORD)
+REPLICA_DB = os.environ.get('REPLICA_DB', 'master')
+REPLICA_USER = os.environ.get('REPLICA_USER', DB_USER)
+REPLICA_PASSWORD = os.environ.get('REPLICA_PASSWORD', DB_PASSWORD)
 SITE_MODE = os.environ.get('SITE_MODE', 'master')
 
 
@@ -36,7 +36,7 @@ def get_replica_connection():
     else:
         conn = mariadb.connect(
             host=REPLICA_HOST,
-            database=REPLICA_NAME,
+            database=REPLICA_DB,
             user=REPLICA_USER,
             password=REPLICA_PASSWORD,
             port=DB_PORT,
