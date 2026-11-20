@@ -64,18 +64,11 @@ while [ -z "$MYSQL_ROOT_PASSWORD" ]; do
     echo ""
 done
 
-read -p "?= replica user: " DB_REPLICA_USER
-DB_REPLICA_USER=${DB_REPLICA_USER:-replica_user}
-
-read -sp "?= replica password: " DB_REPLICA_PASSWORD
-echo ""
-while [ -z "$DB_REPLICA_PASSWORD" ]; do
-    echo "!= no password, unacceptable."
-    read -sp "?= replica password: " DB_REPLICA_PASSWORD
-    echo ""
-done
 
 if [ $ROLE = 'replica' ]; then
+    REPLICA_USER=""
+    REPLICA_PASSWORD=""
+
     read -p "?= replication database IP: " PEER_DB_HOST
     PEER_DB_HOST=${PEER_DB_HOST:-}
 
@@ -84,6 +77,18 @@ if [ $ROLE = 'replica' ]; then
 else
     PEER_DB_HOST=""
     PEER_DB_NAME=""
+
+    read -p "?= replica user: " DB_REPLICA_USER
+    DB_REPLICA_USER=${DB_REPLICA_USER:-replica_user}
+
+    read -sp "?= replica password: " DB_REPLICA_PASSWORD
+    echo ""
+while [ -z "$DB_REPLICA_PASSWORD" ]; do
+    echo "!= no password, unacceptable."
+    read -sp "?= replica password: " DB_REPLICA_PASSWORD
+    echo ""
+done
+
 fi
 
 # write env file
@@ -103,7 +108,7 @@ SITE_MODE=$ROLE
 EOF
 
 # permissions to env for root only
-sudo chmod 600 "$APP_DIR/.env"
+
 echo "=> .env success"
 fi
 ####################################################################################################
@@ -119,8 +124,8 @@ else
 fi
 
 sudo docker compose up -d 
+sleep 10 # wait for mariadb to be up before trying to connect
 ####################################################################################################
-
 # init db
 ####################################################################################################
 echo "=> waiting for mariadb ($CONTAINER_NAME)..."
@@ -135,5 +140,6 @@ if [ -f "init_db.sh" ]; then
     sudo bash init_db.sh
 fi
 ####################################################################################################
+sudo chmod 600 "$APP_DIR/.env"
 
 echo "=> docker setup done for $ROLE"

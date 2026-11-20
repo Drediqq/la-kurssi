@@ -22,7 +22,7 @@ if [ ${#MISSING_PACKAGES[@]} -gt 0 ]; then
     sudo apt-get update
     sudo apt-get install -y "${MISSING_PACKAGES[@]}"
 else
-    echo "!= all good, skipping install"
+    echo "!= all good, skipping package install"
 fi
     
 # enable docker demon
@@ -54,7 +54,7 @@ mkdir -p "$WEB_DIR/week3/stats"
 
 # make sure scripts executable
 ####################################################################################################
-chmod +x "$SCR_DIR/*"
+chmod +x "$SCR_DIR/"*
 ####################################################################################################
 
 
@@ -72,25 +72,25 @@ sudo cp -r "$WEB_DIR/"* /var/www/html/lakurssi
 read -p "?= install backup scripts? [Y/n]: " -r INSTALL_BACKUP_SCRIPTS
 INSTALL_BACKUP_SCRIPTS=${INSTALL_BACKUP_SCRIPTS:-Y}
 
-if [[ "$INSTALL_BACKUP_SCRIPTS" =~ ^[Yy]$ ]]; then
-    sudo cp -r "$SCR_DIR/"* /usr/local/bin
-    CRON_FILE="/etc/cron.d/lakurssi"
-# make backup run as root every 1h
-sudo bash -c "cat > $CRON_FILE" <<EOF
-0 * * * * root /usr/local/bin/server_backup.sh >/dev/null 2>&1
-0 * * * * root /usr/local/bin/db_backup.sh >/dev/null 2>&1
-EOF
+CRON_FILE="/etc/cron.d/lakurssi"
+CRON_CONTENT=""
 
+if [[ "$INSTALL_BACKUP_SCRIPTS" =~ ^[Yy]$ ]]; then
+    sudo cp "$SCR_DIR/server_backup.sh" "$SCR_DIR/db_backup.sh" "$SCR_DIR/report.sh" /usr/local/bin/
+    sudo chmod +x /usr/local/bin/server_backup.sh /usr/local/bin/db_backup.sh /usr/local/bin/report.sh
+
+    CRON_CONTENT+="0 * * * * root /usr/local/bin/server_backup.sh >/dev/null 2>&1"$'\n'
+    CRON_CONTENT+="0 * * * * root /usr/local/bin/db_backup.sh >/dev/null 2>&1"$'\n'
 else
-    sudo cp -r "$SCR_DIR/report.sh" /usr/local/bin
+    sudo cp "$SCR_DIR/report.sh" /usr/local/bin/
+    sudo chmod +x /usr/local/bin/report.sh
 fi
 
-CRON_FILE="/etc/cron.d/lakurssi"
+CRON_CONTENT+="* * * * * root /usr/local/bin/report.sh >/dev/null 2>&1"$'\n'
 
-# make report run as root
-sudo bash -c "cat >> $CRON_FILE" <<EOF
-* * * * * root /usr/local/bin/report.sh >/dev/null 2>&1
-EOF
+printf "%s" "$CRON_CONTENT" | sudo tee "$CRON_FILE" >/dev/null
+sudo chown root:root "$CRON_FILE"
+sudo chmod 0644 "$CRON_FILE"
 
 # strict permissions
 sudo chmod 644 "$CRON_FILE"
