@@ -52,9 +52,9 @@ mkdir -p "$WEB_DIR/week3/stats"
 
 
 
-# make script executable
+# make sure scripts executable
 ####################################################################################################
-chmod +x "$SCR_DIR/report.sh"
+chmod +x "$SCR_DIR/*"
 ####################################################################################################
 
 
@@ -64,12 +64,43 @@ chmod +x "$SCR_DIR/report.sh"
 echo "=> copying web content.."
 sudo mkdir -p /var/www/html/lakurssi
 sudo cp -r "$WEB_DIR/"* /var/www/html/lakurssi
-
-echo "=> copying scripts.."
-sudo cp -r "$SCR_DIR/"* /usr/local/bin
 ####################################################################################################
 
 
+# script installation and automation
+####################################################################################################
+read -p "?= install backup scripts? [Y/n]: " -r INSTALL_BACKUP_SCRIPTS
+INSTALL_BACKUP_SCRIPTS=${INSTALL_BACKUP_SCRIPTS:-Y}
+
+if [[ "$INSTALL_BACKUP_SCRIPTS" =~ ^[Yy]$ ]]; then
+    sudo cp -r "$SCR_DIR/"* /usr/local/bin
+    CRON_FILE="/etc/cron.d/lakurssi"
+# make backup run as root every 1h
+sudo bash -c "cat > $CRON_FILE" <<EOF
+0 * * * * root /usr/local/bin/server_backup.sh >/dev/null 2>&1
+0 * * * * root /usr/local/bin/db_backup.sh >/dev/null 2>&1
+EOF
+
+else
+    sudo cp -r "$SCR_DIR/report.sh" /usr/local/bin
+fi
+
+CRON_FILE="/etc/cron.d/lakurssi"
+
+# make report run as root
+sudo bash -c "cat >> $CRON_FILE" <<EOF
+* * * * * root /usr/local/bin/report.sh >/dev/null 2>&1
+EOF
+
+# strict permissions
+sudo chmod 644 "$CRON_FILE"
+
+
+echo "=> scripts done"
+####################################################################################################
+
+# docker installation
+####################################################################################################
 read -p "?= install Docker containers? [Y/n]: " -r INSTALL_DOCKER
 INSTALL_DOCKER=${INSTALL_DOCKER:-Y}
 
@@ -78,8 +109,7 @@ if [[ "$INSTALL_DOCKER" =~ ^[Yy]$ ]]; then
 else
     echo "=> docker install skipped"
 fi
-
-
+####################################################################################################
 
 # nginx
 ####################################################################################################
@@ -96,22 +126,5 @@ sudo systemctl restart nginx
 echo "=> Nginx success"
 ####################################################################################################
 
-# cron
-####################################################################################################
-echo "=> automating scripts..."
-
-
-CRON_FILE="/etc/cron.d/lakurssi-report"
-
-# make report run as root
-sudo bash -c "cat > $CRON_FILE" <<EOF
-* * * * * root /usr/local/bin/report.sh >/dev/null 2>&1
-EOF
-
-# strict permissions
-sudo chmod 644 "$CRON_FILE"
-
-echo "=> cron success"
-####################################################################################################
 
 echo "=> setup complete!"

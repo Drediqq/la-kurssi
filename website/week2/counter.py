@@ -37,8 +37,8 @@ def get_replica_connection():
         conn = mariadb.connect(
             host=REPLICA_HOST,
             database=REPLICA_DB,
-            user=REPLICA_USER,
-            password=REPLICA_PASSWORD,
+            user=DB_USER,
+            password=DB_PASSWORD,
             port=DB_PORT,
         )
         return conn
@@ -91,6 +91,7 @@ def index():
 @app.route('/week4/')
 def week4_index():
     count = 0
+    mode = SITE_MODE
     try:
         conn = get_replica_connection()
         cursor = conn.cursor()
@@ -105,7 +106,7 @@ def week4_index():
         print(f"replca db error {e}")
         count = -1
     
-    return render_template('week4.html', count=count)
+    return render_template('week4.html', count=count, mode=mode)
 with app.app_context():
     init_db()
 
