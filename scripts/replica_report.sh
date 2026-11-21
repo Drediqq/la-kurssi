@@ -1,40 +1,45 @@
 #!/bin/bash
 set -u
 
-USER_NAME=""
+USER_NAME="${USER_NAME:-je}"
 CONTAINER_NAME="mariadb_replica"
-DB_USER="replica"
+DB_USER="${DB_USER:-replica}"
+DB_PASS="${DB_PASS:-}"
+ENV_FILE="/opt/replica/.env"
 STATS_DIR="/var/www/html/lakurssi/week2/templates/stats"
 
 mkdir -p "$STATS_DIR"
 chmod 755 "$STATS_DIR"
+
+if [ -f "$ENV_FILE" ]; then
+  set -a
+  . "$ENV_FILE"
+  set +a
+  DB_USER="${MYSQL_USER:-$DB_USER}"
+  DB_PASS="${MYSQL_PASSWORD:-$DB_PASS}"
+fi
 
 write_values() {
   local target="$1"
   local value="$2"
   local tmp="${target}.tmp.$$"
   printf '%s\n' "$value" > "$tmp"
-  chmod 644 "$tmp"
+  chmod 0644 "$tmp"
   mv "$tmp" "$target"
 }
 
 if ! docker inspect -f '{{.State.Running}}' "$CONTAINER_NAME" 2>/dev/null | grep -q '^true$'; then
-  write_values "$STATS_DIR/repl_status.txt" "CONTAINER DOWN"
-  write_values "$STATS_DIR/repl_lag.txt" "N/A"
+  write_values "$STATS_DIR/replica_status.txt" "CONTAINER DOWN"
+  write_values "$STATS_DIR/replica_lag.txt" "N/A"
   echo "not working"
   exit 0
 fi
 
-CLIENT="mariadb"
-if ! docker exec "$CONTAINER_NAME" command -v mariadb >/dev/null 2>&1; then
-  CLIENT="mysql"
-fi
+ROW=$(docker exec -e MYSQL_PWD="$DB_PASS" "$CONTAINER_NAME" mariadb -u"$DB_USER" -e "SHOW SLAVE STATUS\G" 2>&1 || true)
 
-ROW=$(docker exec "$CONTAINER_NAME" "$CLIENT" -u"$DB_USER" -N -B -e "SHOW SLAVE STATUS\G" 2>/dev/null)
-
-IO_RUNNING=$(printf '%s\n' "$ROW" | awk -F': ' '/Slave_IO_Running:/ {print $2}')
-SQL_RUNNING=$(printf '%s\n' "$ROW" | awk -F': ' '/Slave_SQL_Running:/ {print $2}')
-LAG_SEC=$(printf '%s\n' "$ROW" | awk -F': ' '/Seconds_Behind_Master:/ {print $2}')
+IO_RUNNING=$(printf '%s\n' "$ROW" | awk -F': ' '/^[[:space:]]*Slave_IO_Running:/ {gsub(/\r/, "", $2); gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
+SQL_RUNNING=$(printf '%s\n' "$ROW" | awk -F': ' '/^[[:space:]]*Slave_SQL_Running:/ {gsub(/\r/, "", $2); gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
+LAG_SEC=$(printf '%s\n' "$ROW" | awk -F': ' '/^[[:space:]]*Seconds_Behind_Master:/ {gsub(/\r/, "", $2); gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
 
 if [[ "$IO_RUNNING" == "Yes" && "$SQL_RUNNING" == "Yes" && "${LAG_SEC:-}" != "NULL" ]]; then
   write_values "$STATS_DIR/replica_status.txt" "OK (replicating)"
