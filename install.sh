@@ -81,7 +81,7 @@ if [[ "$INSTALL_BACKUP_SCRIPTS" =~ ^[Yy]$ ]]; then
     "$SCR_DIR/server_backup.sh" \
     "$SCR_DIR/db_backup.sh" \
     "$SCR_DIR/report.sh" \
-    "$SCR_DIR/week4_stats" \
+    "$SCR_DIR/week4_stats.sh" \
     /usr/local/bin/
 
     CRON_CONTENT+="0 * * * * root /usr/local/bin/server_backup.sh >/dev/null 2>&1"$'\n'
