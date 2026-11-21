@@ -3,10 +3,10 @@
 
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../../css/style.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Week 4 - TODO</title>
+    <title>Week 4 - Replicators</title>
 </head>
 
 
@@ -15,28 +15,23 @@
     <div class="content">
         <h1>Server Backups</h1>
         <p>Week 4: Server Cloning, Backups and Database Replication</p>
-        <p>TODO subtitle</p>
-        <section>
-            <h2>TODO</h2>
-            <p>
-                TODO
-            </p>
+        
 
 
-        </section>
+       
 
         <section>
 
-            <h2>Page load counter</h2>
+            <h1>Some Stats</h1>
             <p>Page loads: <span class="counter">{{ count }}</span></p>
             <p>Mode: <span class="mode">{{ mode }}</p>
             
-                <p>
+            <p>
                 if Mode says "master" you are at incorrect page ->
                 <a href="http://195.148.23.228/week4/">Server B</a>
             </p>
 
-        
+
             <div class="table-container">
                 <table>
                     <thead>
@@ -68,60 +63,36 @@
                         </tr>
                     </tbody>
                 </table>
-                <p>Restore test looks at index.html if index.html is changed</p>
+                <p>Restore test looks at tarred index.html and compares it to another index.html</p>
             </div>
         </section>
 
         <section>
             <h1>Assignments</h1>
-            
+
             <h2>Links to pages:</h2>
             <p>
-                <a href="">Server A, Week 2</a>
-                <a href="">Server B, Week 4</a>
+                <a href="http://195.148.20.114/week2/">Server A, Week 2</a><br><br>
+                <a href="http://195.148.23.228/week4/">Server B, Week 4</a>
             </p>
-            
+
             <h2>How this server was created</h2>
             <p>
                 I already cloned my vm last week for testing purposes by making a snapshot and then spinning up another
-                vm based on said snapshot, very simple stuff. This assignment meant that I had to move my testing to my own local server, 
-                which required quite a bit of configuration, because I haven't done much with it yet. 
+                vm based on said snapshot, very simple stuff. This assignment meant that I had to move my testing to my
+                own local server,
+                which required quite a bit of configuration, because I haven't done much with it yet.
             </p>
-
-            <h2>Storage layout and backup locations</h2>
-            <p>
-                Server backup script running in server A first copies files to tmp/backups/lakurssi_TIMESTAMP, 
-                then makes a tar archive to /var/backups/lakurssi_TIMESTAMP_backup/.
-                Then script also rsyncs it to server B TODO
-                
-            </p>
-
-            <h2>Linux users, database users, ownership and permissions used</h2>
-            <h3>Linux users</h3>
-            <p>
-                Backup scripts are ran by root. cronfile is owned by root.
-            </p>
-            <h3>Database users</h3>
-            <p>
-                Server A has its own user running week2 page and it can SELECT and UPDATE "master" database.
-                Server A also has replica user which has only SELECT rights.
-                Server B only has replica user which has its own database to run week2, 
-                it also replicates Server A:s database to week4.
-            </p>
+            <h2>Why continuous replication =/= backup </h2>
+            <p>Obviously it also replicates all errors and corruptions, so it's not a backup at all.</p>
             
-            <h2>Hourly backup schedule and replication</h2>
-            <p>
-                Both backup scripts are set to run every hour with cron.
-                0 * * * * ....
-            </p>
- 
-          
+
         </section>
 
         <section>
             <h1>Test results</h1>
             <p>
-                
+
             </p>
             <h3>1. Both pages are publicly accessible</h3>
             <p>
@@ -129,117 +100,188 @@
             </p>
 
             <h3>2. Loading A’s page updates the counter displayed on B</h3>
+            <p>Currently this is setup this way:</p>
             <ul>
-                <p>I'm assuming this means serverA/week2 increments the value in serverB/week4.</p>
-                <p>Currently this is setup this way:</p> 
+
                 <p>Server A:</p>
                 <li>runs master database</li>
                 <li>serves index, week1-4 pages.*</li>
 
-                * week4 page counter in serverA pulls straight from its own database. So ServerA week2 = serverA week4
 
                 <p>Server B:</p>
                 <li>Replicates Server A:s "master" database</li>
                 <li>Serves index, week1-4 pages.</li>
                 <li>Week2 has its own server B local database so it doesn't break</li>
                 <li>Week4 counter is replicated from server A:s database</li>
-                So in short ServerB-week4 = ServerA-week2
 
-                
+
+                <p>
+                    * week4 page counter in serverA pulls straight from its own database. So ServerA week2 = serverA
+                    week4
+                    and ServerB-week4 = ServerA-week2
+                </p>
+
+
             </ul>
 
             <h3>3. Loading B’s page does not increment the counter</h3>
             <p>
-                Again I'm assuming this means serverB/week4 doesn't increase the value and this should be the case, 
+                Again I'm assuming this means serverB/week4 doesn't increase the value and this should be the case,
                 since replica user doesn't have permissions to do anything else than just SELECT from database.
-                I modified python script to have its own script for week4, 
+                I modified python script to have its own script for week4,
                 which only selects and doesn't even try to push values into database.
             </p>
 
             <h3>4. Database replication reports normal operation</h3>
             <p>
-                TODO 
-                add some realtime statistic or something idk similiar to last week
+                replica_report queries db container for replication status.
             </p>
 
             <h3>5. At least two scheduled file backups succeed</h3>
             <p>
-                TODO 
-                add another realtime statistic which counts number of backups in backup folder
-                proven by 6.?
+                week4_stats counts how many backup .tars are in backup folder.
             </p>
 
             <h3>6. A restored test file matches the original</h3>
             <p>
-                TODO 
-                add automatic backup restoration to B? 
-                or some kind of difference lookup thing
+                week4_stats script checks if index.html matches in latest .tar
+                so it returns either mismatch, missing or match
             </p>
 
             <h3>7. B's website, replication and backup schedule continue working after B is rebooted.</h3>
             <p>
-                TODO 
-                This should be proven by 4.
+                Replication: Visit <a href="http://195.148.20.114/week2/">Server A, Week 2</a> and reload this page.
+            </p>
+            <p>
+                Backup schedule: Server A runs the script hourly, if Server B happens to be down at that exact time,
+                then backup might fail, but assuming it's on during next backup, it's going to work.
+                
+                <br>cron -> 0 * * * * .... for hourly execution.
+            </p>
+            <p>
+                I could've split the rsync code into another file which tries until it passes,
+                but I didn't have time to figure that out.
             </p>
 
         </section>
-        
-        
+
+
         <section>
-            <h2>Commands used TODO</h2>
+            <h1>Commands used</h1>
 
             <ul>
-                TODO
+                Rsyncs .tar to server B
                 <li>
-                    <code>TODO</code>
+                    <code>rsync -az -e "ssh -i "$SSH_KEY" -o BatchMode=yes" "${BACKUP_DIR}/${TAR_NAME}" "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_BACKUP_DIR}/"</code>
                 </li>
                 <br>
-                TODO
+                Checks replication health on Server B to inspect Slave_IO_Running, Slave_SQL_Running, and lag. 
+                On Server A, you could check replications binary logging, with different command (obviously).
                 <li>
-                    <code>TODO</code>
+                    <code>docker exec -e MYSQL_PWD="$DB_PASS" "$CONTAINER_NAME" mariadb -u"$DB_USER" -e "SHOW SLAVE STATUS\G" 2>&1 || true</code>
                 </li>
                 <br>
-                TODO
+                Database backup. Quickly so nobody notices.
                 <li>
-                    <code>TODO</code>:
-                </li>
-                <br>
-                TODO
-                <li>
-                    <code>TODO</code>:
+                    <code>mariadb-dump --single-transaction --quick -u root -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" > "$BACKUP_DIR/$BACKUP_FILE"</code>
                 </li>
             </ul>
+            <p>And so many more, but I really can't be bothered to add them all here</p>
         </section>
 
         <section>
-            <h2>TODO</h2>
-            <p>
-                TODO
+            <h1>Storage and backups</h1>
+
+
+            <h3>Web root (Server A and Server B)</h3>
+            <p>Served files live under <code>/var/www/html</code></p>
+
+            <br>
+            <h3>Backup staging and archives (Server A)</h3>
+            <p> Backups are staged in <code>/tmp/backups/lakurssi_TIMESTAMP</code> and archived in
+                <code>/var/backups</code> outside public directories so archives can't be downloaded
             </p>
 
-            <h3>TODO</h3>
-            <p>
-                TODO
+
+            <br>
+            <h3>Remote backups on Server B: Hourly</h3>
+            <p><code>rsync</code> transfers place backups via ssh in a dedicated backup directory on Server B outside
+                <code>/var/www/html</code>, protected with restrictive permissions.
             </p>
 
-            <h3>TODO</h3>
-            <p>
-                TODO
+            <br>
+            <h3>Monitoring stats output:</h3>
+            <p><code>replica_report.sh</code> writes <code>replica_status.txt</code> and
+                <code>replica_lag.txt</code> to <code>/var/www/html/lakurssi/week2/templates/stats</code>
+                using temporary files (<code>.tmp.$$</code>) moved into place with <code>0644</code>
+                so the web app never reads half-written output.
+            </p>
+        </section>
+        <section>
+            <h1>Linux users and ownership</h1>
+
+            <h3>Cron and automation scripts</h3>
+            <p> Backup and replication monitoring scripts
+                such as <code>/usr/local/bin/replica_report.sh</code> are owned and executed by
+                via roots cron so it can manage docker containers, backup directories,
+                and priviledged paths
             </p>
 
-            <h3>TODO</h3>
+            <br>
+            <h3>Credentials and configs</h3>
             <p>
-                TODO
+                env files holding database credentials
+                which are restricted
+                with <code>0600</code> and owned by root, those are also excluded from
+                git so passwords and keys are never exposed to unprivileged users or the repo.
+            </p>
+
+            <br>
+            <h3>Web and backup isolation:</h3>
+            <p> Keeping backup archives and SQL dumps out of
+                <code>/var/www/html</code> prevents direct web exposure,
+                while read-only permissions (<code>0644</code>)
+                on generated status files allow the web server to read status strings without write access to scripts or
+                configs.
+            </p>
+
+
+            <h3>Database users and privileges</h3>
+            <p>Both servers have their own user for week2 app, but Server A database also has server B:s user as
+                replication user.
+                In both sites week2 still works, except Server B/week2 doesn't update the count to serverB/week4
+            </p>
+            <p>
+                Replication user can only SELECT from serverA:s database, nothing else.
+            </p>
+            <p>Server Bs user also has replication slave monitor attribute to show the statistic for the table above.
             </p>
 
         </section>
 
 
         <section>
-            <h2>A problem solved or a lesson learned TODO</h2>
-            <p>TODO</p>
+            <h1>A problem solved or a lesson learned</h1>
+            <p>
+                I found that making an install script for 2 non-identical servers is a pain in the ass,
+                especially because the assignment info was quite hard to comprehend server
+                a goes to b and b goes to a and then b but then a/week1 then b/week6 but then week4/a, I guess I'm just
+                dumb.
+            </p>
+            <p>
+                I learned that docker is very particular about commands used and interwebs is full of very outdated
+                information.
+            </p>
+            <p>
+
+            </p>
+        </section>
+        <section>
+            <h1>Image of a replicator</h1>
+            <img src="https://i.pinimg.com/736x/ba/a4/7f/baa47f8b550af76c906eb1d630474187.jpg" alt="replicator"> 
         </section>
     </div>
+
     <script src="../js/scripts.js"></script>
     <script src="../js/week4.js"></script>
 </body>

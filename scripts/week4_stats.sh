@@ -8,7 +8,7 @@ REMOTE_STATS_DIR="${REMOTE_STATS_DIR:-$STATS_DIR}"
 SSH_KEY="${SSH_KEY:-/root/.ssh/rsync_key}"
 PRETTY_TIMESTAMP="${PRETTY_TIMESTAMP:-}"
 
-BACKUP_DIR="/var/backups/lakurssi"
+BACKUP_DIR="${BACKUP_DIR:-}"
 STATS_DIR="/var/www/html/lakurssi/week2/templates/stats"
 CONTAINER_NAME="mariadb_replica"
 ENV_FILE="/opt/replica/.env"
