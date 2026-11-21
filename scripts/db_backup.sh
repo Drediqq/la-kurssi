@@ -21,7 +21,7 @@ fi
 ##############################################################################################################
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 BACKUP_FILE="dbbackup_${MYSQL_DATABASE}_${TIMESTAMP}.sql"
-BACKUP_DIR="/var/backups/db_backup/"
+BACKUP_DIR="/var/backups/lakurssi/db_backup/"
 mkdir -p "$BACKUP_DIR"
 
 echo "=> backing up db: $MYSQL_DATABASE..."

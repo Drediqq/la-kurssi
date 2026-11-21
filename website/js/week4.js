@@ -21,7 +21,13 @@ async function updateVariables(filename, elementId) {
 
 // load stats
 function loadAllStats() {
-    updateVariables("stats/lastbu.txt", "val-backup-time");
+    const directory = "/var/www/html/lakurssi/week2/templates/stats";
+
+    updateVariables("${directory}/lastbu.txt", "val-backup-time");
+    updateVariables("${directory}/bu_count.txt", "val-backup-count");
+    updateVariables("${directory}/replica_status.txt", "val-repl-status");
+    updateVariables("${directory}/replica_lag.txt", "val-repl-lag");
+    updateVariables("${directory}/restore_check.txt", "val-restore-check");
 }
 
 window.addEventListener("DOMContentLoaded", () => {

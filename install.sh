@@ -69,25 +69,32 @@ sudo cp -r "$WEB_DIR/"* /var/www/html/lakurssi
 
 # script installation and automation
 ####################################################################################################
-read -p "?= install backup scripts? [Y/n]: " -r INSTALL_BACKUP_SCRIPTS
+read -p "?= install master scripts? [Y/n]: " -r INSTALL_BACKUP_SCRIPTS
 INSTALL_BACKUP_SCRIPTS=${INSTALL_BACKUP_SCRIPTS:-Y}
 
 CRON_FILE="/etc/cron.d/lakurssi"
-CRON_CONTENT=""
+CRON_CONTENT=$'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n'
+
 
 if [[ "$INSTALL_BACKUP_SCRIPTS" =~ ^[Yy]$ ]]; then
-    sudo cp "$SCR_DIR/server_backup.sh" "$SCR_DIR/db_backup.sh" "$SCR_DIR/report.sh" /usr/local/bin/
-    sudo chmod +x /usr/local/bin/server_backup.sh /usr/local/bin/db_backup.sh /usr/local/bin/report.sh
+    sudo cp "$SCR_DIR/server_backup.sh" "$SCR_DIR/db_backup.sh" "$SCR_DIR/report.sh" "$SCR_DIR/backup_check.sh" /usr/local/bin/
 
     CRON_CONTENT+="0 * * * * root /usr/local/bin/server_backup.sh >/dev/null 2>&1"$'\n'
     CRON_CONTENT+="0 * * * * root /usr/local/bin/db_backup.sh >/dev/null 2>&1"$'\n'
+    CRON_CONTENT+="* * * * * root /usr/local/bin/report.sh >/dev/null 2>&1"$'\n'
+    CRON_CONTENT+="* * * * * root /usr/local/bin/backup_check.sh >/dev/null 2>&1"$'\n'
 else
-    sudo cp "$SCR_DIR/report.sh" /usr/local/bin/
-    sudo chmod +x /usr/local/bin/report.sh
+    sudo cp "$SCR_DIR/report.sh" "$SCR_DIR/replica_report.sh" "$SCR_DIR/remove_stale_backups.sh" "$SCR_DIR/backup_counter.sh"  /usr/local/bin/
+    CRON_CONTENT+="* * * * * root /usr/local/bin/report.sh >/dev/null 2>&1"$'\n'
+    CRON_CONTENT+="* * * * * root /usr/local/bin/replica_report.sh >/dev/null 2>&1"$'\n'
+    CRON_CONTENT+="* * * * * root /usr/local/bin/remove_stale_backups.sh >/dev/null 2>&1"$'\n'
+    CRON_CONTENT+="* * * * * root /usr/local/bin/backup_counter.sh >/dev/null 2>&1"$'\n'
+    mkdir -p $HOME/stats
+    mkdir -p $HOME/backups/lakurssi
+    
 fi
 
-CRON_CONTENT+="* * * * * root /usr/local/bin/report.sh >/dev/null 2>&1"$'\n'
-
+sudo chmod +x /usr/local/bin/*
 printf "%s" "$CRON_CONTENT" | sudo tee "$CRON_FILE" >/dev/null
 sudo chown root:root "$CRON_FILE"
 sudo chmod 0644 "$CRON_FILE"
@@ -95,9 +102,9 @@ sudo chmod 0644 "$CRON_FILE"
 # strict permissions
 sudo chmod 644 "$CRON_FILE"
 
-
 echo "=> scripts done"
 ####################################################################################################
+
 
 # docker installation
 ####################################################################################################

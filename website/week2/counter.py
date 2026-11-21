@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory, abort
 import os
 import mariadb
 
@@ -107,6 +107,24 @@ def week4_index():
         count = -1
     
     return render_template('week4.html', count=count, mode=mode)
+    STATS_DIR = os.environ.get('STATS_DIR', '/var/www/html/lakurssi/week4/stats')
+
+@app.route('/week2/templates/stats/<path:filename>')
+def week4_stats(filename):
+    full_path = os.path.abspath(os.path.join(STATS_DIR, filename))
+    stats_root = os.path.abspath(STATS_DIR)
+
+    # Ensure path stays strictly inside STATS_DIR and points to an existing file
+    if not full_path.startswith(stats_root + os.sep) or not os.path.isfile(full_path):
+        abort(404)
+
+    resp = send_from_directory(
+        stats_root,
+        os.path.basename(full_path),
+        mimetype='text/plain; charset=utf-8'
+    )
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    return resp
 with app.app_context():
     init_db()
 

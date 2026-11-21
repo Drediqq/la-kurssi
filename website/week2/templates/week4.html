@@ -36,8 +36,40 @@
                 <a href="http://195.148.23.228/week4/">Server B</a>
             </p>
 
-            <h3>When was last backup?</h3>
-            <p id="val-backup-time">Loading...</p>
+        
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Information</th>
+                            <th scope="col">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Last Backup</th>
+                            <td id="val-backup-time">Loading...</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Amount of backups</th>
+                            <td id="val-backup-count">Loading...</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Status of restore test</th>
+                            <td id="val-restore-check">Loading...</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Replication status</th>
+                            <td id="val-repl-status">Loading...</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Replication lag</th>
+                            <td id="val-repl-lag">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>Restore test looks at index.html if index.html is changed</p>
+            </div>
         </section>
 
         <section>
@@ -65,13 +97,22 @@
             </p>
 
             <h2>Linux users, database users, ownership and permissions used</h2>
+            <h3>Linux users</h3>
             <p>
-                
+                Backup scripts are ran by root. cronfile is owned by root.
             </p>
-
+            <h3>Database users</h3>
+            <p>
+                Server A has its own user running week2 page and it can SELECT and UPDATE "master" database.
+                Server A also has replica user which has only SELECT rights.
+                Server B only has replica user which has its own database to run week2, 
+                it also replicates Server A:s database to week4.
+            </p>
+            
             <h2>Hourly backup schedule and replication</h2>
             <p>
-
+                Both backup scripts are set to run every hour with cron.
+                0 * * * * ....
             </p>
  
           
@@ -88,14 +129,31 @@
             </p>
 
             <h3>2. Loading A’s page updates the counter displayed on B</h3>
-            <p>
-                I'm assuming this means serverA/week2 increments the value in this page.
-            </p>
+            <ul>
+                <p>I'm assuming this means serverA/week2 increments the value in serverB/week4.</p>
+                <p>Currently this is setup this way:</p> 
+                <p>Server A:</p>
+                <li>runs master database</li>
+                <li>serves index, week1-4 pages.*</li>
+
+                * week4 page counter in serverA pulls straight from its own database. So ServerA week2 = serverA week4
+
+                <p>Server B:</p>
+                <li>Replicates Server A:s "master" database</li>
+                <li>Serves index, week1-4 pages.</li>
+                <li>Week2 has its own server B local database so it doesn't break</li>
+                <li>Week4 counter is replicated from server A:s database</li>
+                So in short ServerB-week4 = ServerA-week2
+
+                
+            </ul>
 
             <h3>3. Loading B’s page does not increment the counter</h3>
             <p>
                 Again I'm assuming this means serverB/week4 doesn't increase the value and this should be the case, 
                 since replica user doesn't have permissions to do anything else than just SELECT from database.
+                I modified python script to have its own script for week4, 
+                which only selects and doesn't even try to push values into database.
             </p>
 
             <h3>4. Database replication reports normal operation</h3>

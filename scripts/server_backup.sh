@@ -1,55 +1,76 @@
 #!/bin/bash
 
-# exit if shit hits the fan
+#
 set -e
 
-# where to sync
+# where to sync 
 ##############################################################################################################
 REMOTE_HOST=""
 REMOTE_USER=""
-REMOTE_BACKUP_DIR="/home/$REMOTE_USER/backups/lakurssi"
+REMOTE_BACKUP_DIR="/home/${REMOTE_USER}/backups/lakurssi"
+REMOTE_STATS_DIR="/home/${REMOTE_USER}/stats"
 SSH_KEY="/root/.ssh/rsync_key"
 ##############################################################################################################
 
-# directories
+# paths and timestamps
 ##############################################################################################################
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-BACKUP_DIR="/var/backups/lakurssi_${TIMESTAMP}_backup"
-TAR_NAME="backup_$TIMESTAMP.tar.gz"
-DIR_NAME="/tmp/backups/lakurssi_$TIMESTAMP"
-WEB_BU_TIME="/var/www/html/lakurssi/week2/templates/stats"
+PRETTY_TIMESTAMP=$(date '+%d.%m.%Y %H:%M')
+
+WEB_SRC="/var/www/html/lakurssi"
+STATS_DIR="/var/www/html/lakurssi/week2/templates/stats"
+BACKUP_DIR="/var/backups/lakurssi/web_backup"
+STAGING_BASE="/tmp/backups"
+STAGING_NAME="lakurssi_${TIMESTAMP}"
+DIR_NAME="${STAGING_BASE}/${STAGING_NAME}"
+TAR_NAME="backup_${TIMESTAMP}.tar.gz"
 ##############################################################################################################
+
+cleanup() {
+    rm -rf "$DIR_NAME"
+}
+trap cleanup EXIT
 
 echo "=> Backup start"
 
 # make directories if they are missing
 ##############################################################################################################
-mkdir -p "$BACKUP_DIR"
+mkdir -p "$BACKUP_DIR" "$DIR_NAME" "$STATS_DIR"
 chmod 700 "$BACKUP_DIR"
-mkdir -p "$DIR_NAME"
-mkdir -p "$WEB_BU_TIME"
+chmod 755 "$STATS_DIR"
 ##############################################################################################################
 
-# copy web content
+# copy web content from /var/www/html/lakurssi
 ##############################################################################################################
-if [ -d "$WEB_BU_TIME" ]; then
-    echo "=> backing up web content..."
-    cp -a "$WEB_BU_TIME/." "$DIR_NAME/"
+if [ -d "$WEB_SRC" ]; then
+    echo "=> backing up web content from $WEB_SRC..."
+    cp -a "$WEB_SRC/." "$DIR_NAME/"
+else
+    echo "=> source directory $WEB_SRC missing, creating empty staging folder"
 fi
 ##############################################################################################################
 
-# make tarball (excluding lastbu.txt)
+# make tarball (excluding stats and temps)
 ##############################################################################################################
 echo "=> creating tar $TAR_NAME..."
-tar --exclude="lastbu.txt" -czf "$BACKUP_DIR/$TAR_NAME" -C /tmp/backups "lakurssi_$TIMESTAMP"
-chmod 600 "$BACKUP_DIR/$TAR_NAME"
+tar \
+    --exclude="lastbu.txt" \
+    --exclude="week2/templates/stats" \
+    --exclude="week2/templates/stats/*" \
+    --exclude="week4/stats" \
+    --exclude="week4/stats/*" \
+    --exclude="*.swp" \
+    -czf "${BACKUP_DIR}/${TAR_NAME}" -C "$STAGING_BASE" "$STAGING_NAME"
+chmod 600 "${BACKUP_DIR}/${TAR_NAME}"
 ##############################################################################################################
 
-# rsync
+# rsync archive if remote target is configured
 ##############################################################################################################
-if [ -n "$REMOTE_HOST" ]; then
+if [ -n "$REMOTE_HOST" ] && [ -n "$REMOTE_USER" ]; then
     echo "=> syncing to B -> ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_BACKUP_DIR}..."
-    rsync -avz -e "ssh -i \"$SSH_KEY\" -o BatchMode=yes" \
+    ssh -i "$SSH_KEY" -o BatchMode=yes "${REMOTE_USER}@${REMOTE_HOST}" \
+        "mkdir -p '${REMOTE_BACKUP_DIR}' '${REMOTE_STATS_DIR}'"
+    rsync -az -e "ssh -i \"$SSH_KEY\" -o BatchMode=yes" \
         "${BACKUP_DIR}/${TAR_NAME}" \
         "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_BACKUP_DIR}/"
 else
@@ -57,12 +78,25 @@ else
 fi
 ##############################################################################################################
 
-# remove temp files and +week old backups
+# remove old backups older than 7 days
 ##############################################################################################################
 echo "=> taking out the trash..."
-rm -rf "$DIR_NAME"
 find "$BACKUP_DIR" -name "backup_*.tar.gz" -mtime +7 -delete
 ##############################################################################################################
 
-# write timestamp to web directory after backup completes
-echo "last backup : $TIMESTAMP" > "$WEB_BU_TIME/lastbu.txt"
+# write timestamp to stats
+##############################################################################################################
+TMP_LASTBU="${STATS_DIR}/lastbu.txt.tmp.$$"
+printf '%s\n' "$PRETTY_TIMESTAMP" > "$TMP_LASTBU"
+chmod 0644 "$TMP_LASTBU"
+mv "$TMP_LASTBU" "${STATS_DIR}/lastbu.txt"
+
+if [ -n "$REMOTE_HOST" ] && [ -n "$REMOTE_USER" ]; then
+    echo "=> syncing lastbu.txt to ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_STATS_DIR}/..."
+    rsync -az -e "ssh -i \"$SSH_KEY\" -o BatchMode=yes" \
+        "${STATS_DIR}/lastbu.txt" \
+        "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_STATS_DIR}/"
+fi
+##############################################################################################################
+
+echo "=> Backup done"
