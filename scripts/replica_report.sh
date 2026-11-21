@@ -1,6 +1,7 @@
 #!/bin/bash
 set -u
 
+USER_NAME=""
 CONTAINER_NAME="mariadb_replica"
 DB_USER="replica"
 STATS_DIR="/var/www/html/lakurssi/week2/templates/stats"
@@ -44,3 +45,5 @@ else
   write_values "$STATS_DIR/replica_lag.txt" "N/A"
   echo "$STATS_DIR/replica_status.txt" "ERROR / STOPPED $STATS_DIR/replica_lag.txt" "N/A:"
 fi
+
+cp /home/$USER_NAME/* /var/www/html/lakurssi/week2/templates/stats

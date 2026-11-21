@@ -77,18 +77,27 @@ CRON_CONTENT=$'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 
 if [[ "$INSTALL_BACKUP_SCRIPTS" =~ ^[Yy]$ ]]; then
-    sudo cp "$SCR_DIR/server_backup.sh" "$SCR_DIR/db_backup.sh" "$SCR_DIR/report.sh" "$SCR_DIR/backup_check.sh" /usr/local/bin/
+    sudo cp \
+    "$SCR_DIR/server_backup.sh" \
+    "$SCR_DIR/db_backup.sh" \
+    "$SCR_DIR/report.sh" \
+    "$SCR_DIR/week4_stats" \
+    /usr/local/bin/
 
     CRON_CONTENT+="0 * * * * root /usr/local/bin/server_backup.sh >/dev/null 2>&1"$'\n'
     CRON_CONTENT+="0 * * * * root /usr/local/bin/db_backup.sh >/dev/null 2>&1"$'\n'
+    CRON_CONTENT+="* * * * * root /usr/local/bin/week4_stats.sh >/dev/null 2>&1"$'\n'
     CRON_CONTENT+="* * * * * root /usr/local/bin/report.sh >/dev/null 2>&1"$'\n'
-    CRON_CONTENT+="* * * * * root /usr/local/bin/backup_check.sh >/dev/null 2>&1"$'\n'
 else
-    sudo cp "$SCR_DIR/report.sh" "$SCR_DIR/replica_report.sh" "$SCR_DIR/remove_stale_backups.sh" "$SCR_DIR/backup_counter.sh"  /usr/local/bin/
+    sudo cp \
+    "$SCR_DIR/report.sh" \
+    "$SCR_DIR/replica_report.sh" \
+    "$SCR_DIR/remove_stale_backups.sh" \
+    /usr/local/bin/
+
     CRON_CONTENT+="* * * * * root /usr/local/bin/report.sh >/dev/null 2>&1"$'\n'
     CRON_CONTENT+="* * * * * root /usr/local/bin/replica_report.sh >/dev/null 2>&1"$'\n'
     CRON_CONTENT+="* * * * * root /usr/local/bin/remove_stale_backups.sh >/dev/null 2>&1"$'\n'
-    CRON_CONTENT+="* * * * * root /usr/local/bin/backup_counter.sh >/dev/null 2>&1"$'\n'
     mkdir -p $HOME/stats
     mkdir -p $HOME/backups/lakurssi
     

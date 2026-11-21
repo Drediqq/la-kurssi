@@ -5,26 +5,35 @@ set -e
 
 # where to sync 
 ##############################################################################################################
-REMOTE_HOST=""
-REMOTE_USER=""
-REMOTE_BACKUP_DIR="/home/${REMOTE_USER}/backups/lakurssi"
-REMOTE_STATS_DIR="/home/${REMOTE_USER}/stats"
-SSH_KEY="/root/.ssh/rsync_key"
+export REMOTE_HOST=""
+export REMOTE_USER=""
+export REMOTE_BACKUP_DIR="/home/${REMOTE_USER}/backups/lakurssi"
+export REMOTE_STATS_DIR="/home/${REMOTE_USER}/stats"
+export SSH_KEY="/root/.ssh/rsync_key"
 ##############################################################################################################
 
 # paths and timestamps
 ##############################################################################################################
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-PRETTY_TIMESTAMP=$(date '+%d.%m.%Y %H:%M')
+export PRETTY_TIMESTAMP=$(date '+%d.%m.%Y %H:%M')
 
 WEB_SRC="/var/www/html/lakurssi"
-STATS_DIR="/var/www/html/lakurssi/week2/templates/stats"
-BACKUP_DIR="/var/backups/lakurssi/web_backup"
+export STATS_DIR="/var/www/html/lakurssi/week2/templates/stats"
+export BACKUP_DIR="/var/backups/lakurssi/web_backup"
 STAGING_BASE="/tmp/backups"
 STAGING_NAME="lakurssi_${TIMESTAMP}"
 DIR_NAME="${STAGING_BASE}/${STAGING_NAME}"
 TAR_NAME="backup_${TIMESTAMP}.tar.gz"
 ##############################################################################################################
+
+write_values() {
+  local target="$1"
+  local value="$2"
+  local tmp="${target}.tmp.$$"
+  printf '%s\n' "$value" > "$tmp"
+  chmod 644 "$tmp"
+  mv "$tmp" "$target"
+}
 
 cleanup() {
     rm -rf "$DIR_NAME"
@@ -81,22 +90,12 @@ fi
 # remove old backups older than 7 days
 ##############################################################################################################
 echo "=> taking out the trash..."
-find "$BACKUP_DIR" -name "backup_*.tar.gz" -mtime +7 -delete
+find "$BACKUP_DIR" -name "backup_*.tar.gz" -mtime +1 -delete
 ##############################################################################################################
 
-# write timestamp to stats
+# write stats
 ##############################################################################################################
-TMP_LASTBU="${STATS_DIR}/lastbu.txt.tmp.$$"
-printf '%s\n' "$PRETTY_TIMESTAMP" > "$TMP_LASTBU"
-chmod 0644 "$TMP_LASTBU"
-mv "$TMP_LASTBU" "${STATS_DIR}/lastbu.txt"
-
-if [ -n "$REMOTE_HOST" ] && [ -n "$REMOTE_USER" ]; then
-    echo "=> syncing lastbu.txt to ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_STATS_DIR}/..."
-    rsync -az -e "ssh -i \"$SSH_KEY\" -o BatchMode=yes" \
-        "${STATS_DIR}/lastbu.txt" \
-        "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_STATS_DIR}/"
-fi
+bash /usr/share/bin/week4_stats.sh
 ##############################################################################################################
 
 echo "=> Backup done"
