@@ -46,4 +46,6 @@ else
   echo "$STATS_DIR/replica_status.txt" "ERROR / STOPPED $STATS_DIR/replica_lag.txt" "N/A:"
 fi
 
-cp /home/$USER_NAME/* /var/www/html/lakurssi/week2/templates/stats
+if [ -d "/home/$USER_NAME/stats" ]; then
+  cp -a "/home/$USER_NAME/stats/." "$STATS_DIR/"
+fi
