@@ -9,9 +9,7 @@ SSH_KEY="${SSH_KEY:-/root/.ssh/rsync_key}"
 PRETTY_TIMESTAMP="${PRETTY_TIMESTAMP:-}"
 
 BACKUP_DIR="${BACKUP_DIR:-}"
-STATS_DIR="/var/www/html/lakurssi/week2/templates/stats"
-CONTAINER_NAME="mariadb_replica"
-ENV_FILE="/opt/replica/.env"
+STATS_DIR="${STATS_DIR}"
 
 ORIG_FILE="/var/www/html/lakurssi/index.html"
 TEST_FILE="index.html"
@@ -20,15 +18,7 @@ RESTORE_TMP="/tmp/restore_verify"
 mkdir -p "$STATS_DIR" "$RESTORE_TMP"
 chmod 755 "$STATS_DIR"
 
-if [ -f "$ENV_FILE" ]; then
-  set -a
-  . "$ENV_FILE"
-  set +a
-fi
 
-
-DB_USER="${MYSQL_USER:-replica}"
-DB_PASS="${MYSQL_PASSWORD:-}"
 #write function
 ################################################################################################
 write_values() {
@@ -56,14 +46,17 @@ fi
 # restore check
 ################################################################################################
 LATEST_ARCHIVE=$(ls -1t "$BACKUP_DIR"/*.tar.gz 2>/dev/null | head -n 1 || true)
+ARCHIVE_ENTRY=$(tar -tzf "$LATEST_ARCHIVE" 2>/dev/null | grep -E '(^|/)index\.html$' | head -n 1 || true)
 
 if [[ -z "${LATEST_ARCHIVE:-}" || ! -f "$ORIG_FILE" ]]; then
   write_values "$STATS_DIR/restore_check.txt" "MISSING"
+elif [[ -z "${ARCHIVE_ENTRY:-}" ]]; then
+  write_values "$STATS_DIR/restore_check.txt" "MISSING"
 else
   rm -rf "${RESTORE_TMP:?}/"*
-  if tar -xzf "$LATEST_ARCHIVE" -C "$RESTORE_TMP" "$TEST_FILE" 2>/dev/null \
-     && [[ -f "$RESTORE_TMP/$TEST_FILE" ]] \
-     && cmp -s "$ORIG_FILE" "$RESTORE_TMP/$TEST_FILE"; then
+  if tar -xzf "$LATEST_ARCHIVE" -C "$RESTORE_TMP" "$ARCHIVE_ENTRY" 2>/dev/null \
+     && [[ -f "$RESTORE_TMP/$ARCHIVE_ENTRY" ]] \
+     && cmp -s "$ORIG_FILE" "$RESTORE_TMP/$ARCHIVE_ENTRY"; then
     write_values "$STATS_DIR/restore_check.txt" "MATCH"
   else
     write_values "$STATS_DIR/restore_check.txt" "MISMATCH"
