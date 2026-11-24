@@ -2,6 +2,10 @@
 
 Setup whole thing:<br>
 ```
+git clone https://github.com/drediqq/la-kurssi
+
+cd la-kurssi
+
 bash install.sh
 ```
 Master server:
