@@ -1,0 +1,99 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Ei kahta deployta yhtä aikaa samaan palvelimeen
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Lint ja testit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+
+      - name: Asenna riippuvuudet
+        run: pip install -r requirements-dev.txt
+
+      - name: Ruff (lint)
+        run: ruff check .
+
+      - name: Pytest
+        run: pytest
+
+      - name: Shell-skriptien syntaksitarkistus
+        run: bash -n scripts/*.sh
+
+  deploy:
+    name: Deploy cPoutaan
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      HOST: ${{ secrets.CPOUTA_HOST }}
+      SSH_USER: ${{ secrets.CPOUTA_USER }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SSH-avain ja known_hosts
+        env:
+          SSH_KEY: ${{ secrets.CPOUTA_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.CPOUTA_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          if [ -n "$KNOWN_HOSTS" ]; then
+            printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            echo "::warning::CPOUTA_KNOWN_HOSTS puuttuu, käytetään ssh-keyscania"
+            ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
+          fi
+          cat >> ~/.ssh/config <<EOF
+          Host cpouta
+            HostName $HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+          EOF
+
+      - name: Kopioi koodi palvelimelle (rsync)
+        run: |
+          rsync -az --delete --chmod=D755,F644 \
+            --exclude '.git' --exclude '.github' --exclude '__pycache__' \
+            --exclude '.pytest_cache' --exclude '.ruff_cache' --exclude 'REVISION' \
+            ./ cpouta:/opt/chatapp/app/
+
+      - name: Aja deploy-skripti
+        run: ssh cpouta "bash /opt/chatapp/app/scripts/deploy.sh ${{ github.sha }}"
+
+      - name: Julkinen savutesti
+        run: |
+          # Koko ketju: Nginx -> snippet /viikko5/ -> soketti -> Gunicorn -> Flask
+          curl -fsS --retry 5 --retry-delay 3 "http://$HOST/viikko5/health" | grep -qx "${{ github.sha }}"
+          curl -fsS "http://$HOST/viikko5/" | grep -q 'id="chat-form"'
+          # Staattiset tiedostot alipolusta (Nginx alias)
+          curl -fsS -o /dev/null "http://$HOST/viikko5/static/app.js"
+          echo "Sovellus vastaa osoitteessa http://$HOST/viikko5/"
+
+      - name: cPouta koneen muisti ja cpu
+        run: |
+          ssh cpouta "free -h && lscpu"
+
+      - name: Github koneen muisti ja cpu
+        run: |
+          free -h
+          lscpu
