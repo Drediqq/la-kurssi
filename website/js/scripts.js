@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <a href="/week2/">Week 2</a>
             <a href="/week3/">Week 3</a>
             <a href="http://195.148.23.228/week4/">Week 4</a>
-            <a href="/week5/">Week 5</a>
+            <a href="http://195.148.20.114/week5/">Week 5</a>
         </div>
     `;
     footer.innerHTML = `
