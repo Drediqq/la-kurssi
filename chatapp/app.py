@@ -122,6 +122,4 @@ def chat():
         generate(),
         mimetype="application/x-ndjson",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
-    
     )
-    
