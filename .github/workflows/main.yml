@@ -41,7 +41,7 @@ jobs:
           rsync -az --delete --chmod=D755,F644 \
            --exclude '.git' --exclude '.github' --exclude '__pycache__' \
            --exclude '.pytest_cache' --exclude '.ruff_cache' --exclude 'REVISION' \
-           ./ cpouta:/opt/chatapp/app/
+           ./chatapp/ cpouta:/opt/chatapp/app/
       - name: Aja deploy-skripti
         run: ssh cpouta "bash /opt/chatapp/app/scripts/deploy.sh ${{ github.sha }}"
       - name: Julkinen savutesti
