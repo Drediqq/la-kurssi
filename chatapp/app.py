@@ -124,3 +124,4 @@ def chat():
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     
     )
+    
