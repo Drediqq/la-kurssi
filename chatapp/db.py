@@ -60,4 +60,6 @@ def get_history(session_id: str, limit: int = 10) -> list[dict]:
             """,
             (session_id, limit),
         )
+
         return list(cur.fetchall())
+        

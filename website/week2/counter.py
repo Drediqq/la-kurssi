@@ -1,6 +1,7 @@
-from flask import Flask, render_template, send_from_directory, abort
 import os
+
 import mariadb
+from flask import Flask, render_template, send_from_directory, abort
 
 app = Flask(__name__)
 
@@ -8,7 +9,7 @@ DB_HOST = os.environ.get('DB_HOST', 'db')
 DB_NAME = os.environ.get('DB_NAME', 'testdb')
 DB_USER = os.environ.get('DB_USER', 'root')
 DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
-DB_PORT = int(os.environ.get('DB_PORT', 3306))
+DB_PORT = int(os.environ.get('DB_PORT', '3306'))
 
 
 REPLICA_HOST = os.environ.get('REPLICA_HOST', DB_HOST)
@@ -107,7 +108,9 @@ def week4_index():
         count = -1
     
     return render_template('week4.html', count=count, mode=mode)
-    STATS_DIR = os.environ.get('STATS_DIR', '/var/www/html/lakurssi/week4/stats')
+
+
+STATS_DIR = os.environ.get('STATS_DIR', '/var/www/html/lakurssi/week4/stats')
 
 @app.route('/week2/templates/stats/<path:filename>')
 def week4_stats(filename):
