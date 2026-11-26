@@ -12,8 +12,34 @@ REVISION="${1:-unknown}"
 APP_DIR=/opt/chatapp/app
 VENV=/opt/chatapp/venv
 ENV_FILE=/etc/chatapp/chatapp.env
+MASTER_ENV=/opt/master/.env
 SOCKET=/run/chatapp/gunicorn.sock
 SNIPPET=/etc/nginx/snippets/chatapp.conf
+DB_CONTAINER=mariadb_prime
+
+read_env_var() {
+    local file="$1"
+    local key="$2"
+    local val
+    val="$(sudo grep -E "^[[:space:]]*${key}[[:space:]]*=" "$file" | tail -n1 | sed -E "s/^[[:space:]]*${key}[[:space:]]*=[[:space:]]*//")"
+    val="${val%$'\r'}"
+    if [[ "$val" =~ ^\"(.*)\"$ ]] || [[ "$val" =~ ^\'(.*)\'$ ]]; then
+        val="${BASH_REMATCH[1]}"
+    fi
+    printf '%s' "$val"
+}
+
+db_exec_stdin() {
+    local db_name="$1"
+    local root_pw="$2"
+    if [ -n "$root_pw" ]; then
+        sudo docker exec -i -e "MYSQL_PWD=$root_pw" "$DB_CONTAINER" \
+            sh -c 'if command -v mariadb >/dev/null 2>&1; then exec mariadb -uroot "$1"; else exec mysql -uroot "$1"; fi' -- "$db_name"
+    else
+        sudo docker exec -i "$DB_CONTAINER" \
+            sh -c 'if command -v mariadb >/dev/null 2>&1; then exec mariadb -uroot "$1"; else exec mysql -uroot "$1"; fi' -- "$db_name"
+    fi
+}
 
 cd "$APP_DIR"
 
@@ -24,9 +50,25 @@ echo "==> Python-virtuaaliympäristö ja riippuvuudet"
 
 echo "$REVISION" > REVISION
 
-echo "==> Tietokantaskeema"
-DB_NAME="$(sudo grep -E '^DB_NAME=' "$ENV_FILE" | cut -d= -f2)"
-sudo mysql "$DB_NAME" < deploy/sql/schema.sql
+echo "==> Tietokantaskeema ($DB_CONTAINER)"
+DB_NAME="$(read_env_var "$ENV_FILE" DB_NAME)"
+if [ -z "$DB_NAME" ]; then
+    echo "VIRHE: DB_NAME puuttuu tiedostosta $ENV_FILE." >&2
+    exit 1
+fi
+
+DB_ROOT_PASSWORD="${DB_ROOT_PASSWORD:-}"
+if [ -z "$DB_ROOT_PASSWORD" ] && [ -f "$MASTER_ENV" ]; then
+    for candidate in MYSQL_ROOT_PASSWORD MARIADB_ROOT_PASSWORD DB_ROOT_PASSWORD ROOT_PASSWORD; do
+        candidate_val="$(read_env_var "$MASTER_ENV" "$candidate")"
+        if [ -n "$candidate_val" ]; then
+            DB_ROOT_PASSWORD="$candidate_val"
+            break
+        fi
+    done
+fi
+
+db_exec_stdin "$DB_NAME" "$DB_ROOT_PASSWORD" < deploy/sql/schema.sql
 
 echo "==> Nginx-snippet (/viikko5/)"
 # Snippetin pitää olla liitetty johonkin käytössä olevaan sivustoon (kertaluonteinen käsityö).

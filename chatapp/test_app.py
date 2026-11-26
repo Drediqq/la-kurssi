@@ -46,7 +46,7 @@ def test_index_uses_forwarded_prefix(client):
     # Nginx lähettää alipolun X-Forwarded-Prefix-otsakkeessa (/week5)
     resp = client.get("/", headers={"X-Forwarded-Prefix": "/week5"})
     assert b'href="/week5/static/style.css' in resp.data
-    assert b'src="/week5/static/app.js' in resp.data
+    assert b'src="/week5/static/week5.js' in resp.data
     assert b'data-base="/week5"' in resp.data
 
 

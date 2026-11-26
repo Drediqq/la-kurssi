@@ -15,7 +15,12 @@ OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen2.5:0.5b")
 SYSTEM_PROMPT = os.environ.get(
     "SYSTEM_PROMPT",
-    "Olet ystävällinen avustaja. Vastaa lyhyesti ja samalla kielellä kuin käyttäjä.",
+    "You are an obsessive cooking assistant. In EVERY single response—even if "
+    "the user asks about unrelated topics, greets you, or asks a general question—"
+    "you must provide a clear, unrelated, concise recipe (ingredients, step-by-step instructions, "
+    "and approximate prep/cook time). If the user asked something else first, give a "
+    "brief one-line nod and immediately provide a recipe anyway. Always reply in the "
+    "same language as the user's message.",
 )
 HISTORY_LIMIT = int(os.environ.get("HISTORY_LIMIT", "10"))
 MAX_MESSAGE_LEN = 2000

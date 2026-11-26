@@ -8,7 +8,7 @@
 # Skripti on idempotentti: sen voi ajaa uudelleen.
 set -euo pipefail
 
-MODEL="${1:-qwen2.5:0.5b}"
+MODEL="${1:-llama3.2:3b}"
 DEPLOY_USER="${DEPLOY_USER:-$(whoami)}"
 APP_ROOT=/opt/chatapp
 ENV_DIR=/etc/chatapp
@@ -16,6 +16,15 @@ ENV_FILE=$ENV_DIR/chatapp.env
 SNIPPET=/etc/nginx/snippets/chatapp.conf
 DB_NAME=chatapp
 DB_USER=chatapp
+
+# mariadb docker func
+db_exec() {
+    if docker exec -i "$DB_CONTAINER" sh -c 'command -v mariadb >/dev/null 2>&1'; then
+        docker exec -i "$DB_CONTAINER" mariadb "$@"
+    else
+        docker exec -i "$DB_CONTAINER" mysql "$@"
+    fi
+}
 
 echo "==> Tarkistetaan palvelimen resurssit"
 free -h
@@ -31,12 +40,18 @@ sudo ss -ltnp | awk 'NR==1 || /LISTEN/'
 echo "==> Asennetaan puuttuvat paketit (olemassa olevia ei muuteta)"
 sudo apt-get update -y
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    nginx mariadb-server python3-venv python3-pip rsync curl openssl
+    nginx python3-venv python3-pip rsync curl openssl
 
 echo "==> MariaDB: tarkistetaan, ettei tämä ole read-only-replika"
-sudo systemctl enable --now mariadb
-if [ "$(sudo mysql -N -e 'SELECT @@global.read_only;')" = "1" ]; then
-    echo "VIRHE: MariaDB on read-only-tilassa (replika, esim. palvelin B)." >&2
+if ! docker ps --format '{{.Names}}' | grep -qx "$DB_CONTAINER"; then
+    echo "VIRHE: Docker-kontti '$DB_CONTAINER' ei ole käynnissä." >&2
+    docker ps -a --filter "name=$DB_CONTAINER" >&2 || true
+    exit 1
+fi
+
+READ_ONLY="$(db_exec -N -e 'SELECT @@global.read_only;')"
+if [ "$READ_ONLY" = "1" ]; then
+    echo "VIRHE: MariaDB kontissa '$DB_CONTAINER' on read-only-tilassa (replika, esim. palvelin B)." >&2
     echo "Chat-sovellus kirjoittaa tietokantaan, joten asenna se palvelimelle A." >&2
     exit 1
 fi
@@ -50,14 +65,14 @@ sudo mkdir -p "$APP_ROOT/app" "$ENV_DIR"
 sudo chown -R "$DEPLOY_USER:$DEPLOY_USER" "$APP_ROOT"
 sudo chmod 755 "$APP_ROOT" "$APP_ROOT/app"
 
-echo "==> MariaDB: oma tietokanta ja käyttäjä"
+echo "==> MariaDB ($DB_CONTAINER): oma tietokanta ja käyttäjä"
 if [ ! -f "$ENV_FILE" ]; then
     DB_PASSWORD="$(openssl rand -hex 24)"
-    sudo mysql <<SQL
+    db_exec <<SQL
 CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER IF NOT EXISTS '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD';
-ALTER USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD';
-GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX ON \`$DB_NAME\`.* TO '$DB_USER'@'localhost';
+CREATE USER IF NOT EXISTS '$DB_USER'@'%' IDENTIFIED BY '$DB_PASSWORD';
+ALTER USER '$DB_USER'@'%' IDENTIFIED BY '$DB_PASSWORD';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX ON \`$DB_NAME\`.* TO '$DB_USER'@'%';
 FLUSH PRIVILEGES;
 SQL
 
