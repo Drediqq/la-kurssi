@@ -50,7 +50,7 @@ jobs:
           curl -fsS --retry 5 --retry-delay 3 "http://$HOST/week5/health" | grep -qx "${{ github.sha }}"
           curl -fsS "http://$HOST/week5/" | grep -q 'id="chat-form"'
           # Staattiset tiedostot alipolusta (Nginx alias)
-          curl -fsS -o /dev/null "http://$HOST/week5/static/app.js"
+          curl -fsS -o /dev/null "http://$HOST/week5/static/week5.js"
           echo "Sovellus vastaa osoitteessa http://$HOST/week5/"
       - name: cPouta koneen muisti ja cpu
         run: |
