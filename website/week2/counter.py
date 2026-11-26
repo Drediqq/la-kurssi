@@ -1,7 +1,7 @@
 import os
 
 import mariadb
-from flask import Flask, render_template, send_from_directory, abort
+from flask import Flask, abort, render_template, send_from_directory
 
 app = Flask(__name__)
 
@@ -61,7 +61,7 @@ def init_db():
         conn.commit()
         cursor.close()
         conn.close()
-    except Exception as e:
+    except mariadb.Error as e:
         print(f"Failed to connect maria: {e} :(")
 
 
@@ -82,7 +82,7 @@ def index():
         
         cursor.close()
         conn.close()
-    except Exception as e:
+    except mariadb.Error as e:
         print(f"db error: {e}")
         count = -1
     
@@ -103,7 +103,7 @@ def week4_index():
         
         cursor.close()
         conn.close()
-    except Exception as e:
+    except mariadb.Error as e:
         print(f"replca db error {e}")
         count = -1
     
