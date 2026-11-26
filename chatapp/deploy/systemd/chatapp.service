@@ -1,0 +1,32 @@
+[Unit]
+Description=LLM-chat (Flask + Gunicorn)
+After=network.target mariadb.service ollama.service
+Wants=mariadb.service ollama.service
+
+[Service]
+User=chatapp
+Group=chatapp
+WorkingDirectory=/opt/chatapp/app
+EnvironmentFile=/etc/chatapp/chatapp.env
+# systemd luo hakemiston /run/chatapp, johon Gunicorn tekee Unix-soketin.
+# Soketti ei voi törmätä muiden sovellusten TCP-portteihin (esim. 8000).
+RuntimeDirectory=chatapp
+RuntimeDirectoryMode=0755
+# gthread-workerit: striimaavat pitkät pyynnöt eivät tuki koko palvelua
+ExecStart=/opt/chatapp/venv/bin/gunicorn \
+    --workers 2 --worker-class gthread --threads 8 \
+    --timeout 300 \
+    --bind unix:/run/chatapp/gunicorn.sock --umask 007 \
+    --access-logfile - \
+    app:app
+Restart=on-failure
+RestartSec=3
+
+# Perussuojaukset
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Viikko 5 – LLM-chat (CI/CD)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<!-- data-base = alipolku (esim. /viikko5), jota app.js käyttää API-kutsuissa -->
+<body data-base="{{ request.script_root }}">
+  <main class="chat">
+    <header class="chat__header">
+      <div>
+        <h1>LLM-chat</h1>
+        <p class="chat__meta">Malli: <code>{{ model }}</code> · Nginx → Gunicorn/Flask → Ollama · MariaDB</p>
+      </div>
+      <button type="button" id="new-chat" class="btn btn--ghost">Uusi keskustelu</button>
+    </header>
+
+    <section id="messages" class="chat__messages" aria-live="polite">
+      <p class="chat__empty" id="empty-hint">Kirjoita viesti alle aloittaaksesi keskustelun.</p>
+    </section>
+
+    <form id="chat-form" class="chat__form" autocomplete="off">
+      <textarea id="message" name="message" rows="2" maxlength="2000"
+                placeholder="Kirjoita viesti… (Enter lähettää, Shift+Enter rivinvaihto)" required></textarea>
+      <button type="submit" id="send" class="btn">Lähetä</button>
+    </form>
+  </main>
+  <script src="{{ url_for('static', filename='week5.js') }}"></script>
+  <script src="/js/scripts.js"></script>
+
+</body>
+</html>
