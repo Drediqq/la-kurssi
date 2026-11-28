@@ -81,11 +81,12 @@
       <p>
         Linux users<br>
         Chatapp user: The web application runs as a dedicated non-login system user with nologin through systemd.<br>
-        Deploy user: Deployment connects over SSH using a standard login user with sudo access using a dedicated deploy key.
+        Deploy user: Deployment connects over SSH using a standard login user with sudo access using a dedicated deploy
+        key.
       </p>
       <p>
         Database users<br>
-        chatapp db user: A dedicated mariadb user has only privileges needed on 
+        chatapp db user: A dedicated mariadb user has only privileges needed on
         the chatapp database.
       </p>
       <p>
@@ -105,10 +106,10 @@
         how you added /viikko5/ to Nginx without affecting other sites or pages
       </h3>
       <p>
-        Rather than using a separate listening port or public IP for the web path, 
+        Rather than using a separate listening port or public IP for the web path,
         the existing Nginx site configuration was kept intact and extended with a new location for /week5/ block.
         Requests under week5/ are proxied to the Week 5 application's own localhost port or Unix after checking
-        <code>ss -ltnp</code> and <code>systemctl list-units</code> to avoid conflicting ports. 
+        <code>ss -ltnp</code> and <code>systemctl list-units</code> to avoid conflicting ports.
         Deployment also checks syntax and conflicts with <code>nginx -t</code>
       </p>
 
@@ -118,8 +119,9 @@
       <p>
         llama3.2:3b<br>
         It followed instructions more reliably than other
-        models I tried, while it was a little slower than some non-thinking qwen models. 
-        It wasn't too large or stupid either so I could test it in my local 10+ years old hardware(with 6 gigs of ram set to vm xD).
+        models I tried, while it was a little slower than some non-thinking qwen models.
+        It wasn't too large or stupid either so I could test it in my local 10+ years old hardware(with 6 gigs of ram
+        set to vm xD).
 
       </p>
       <a href="/week3/"">You can find currentish memory and disk usage here</a>
@@ -165,9 +167,13 @@
         </h3>
         <p>
           Push deploys automatically. Assuming it passes all tests.
-
-
         </p>
+            <iframe 
+            width=" 560" height="315" src="https://www.youtube.com/embed/K2nBAMlrSc0?si=e0kJLOweb7CGe2SR"
+            title="YouTube video player" frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+            </iframe>
 
         <h3>
           Commit with a failing test does not get deployed
@@ -192,12 +198,11 @@
 
     <section>
       <h1>Evidence</h1>
-      <iframe
-        width=" 315" height="560" src="https://www.youtube.com/embed/SH-yv5Xzctk" title="YouTube Short player"
+      <iframe width=" 315" height="560" src="https://www.youtube.com/embed/SH-yv5Xzctk" title="YouTube Short player"
         frameborder="0" referrerpolicy="strict-origin-when-cross-origin"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen>
-        </iframe>
+      </iframe>
     </section>
 
     <section>
@@ -205,7 +210,8 @@
       <p>
         Github actions are pretty cool! I haven't had time to look into them before.
         Ai models are ridicilous, I tried my hardest to make this model as unhelpful as possible,
-        but during testing, I found it to do things I didn't want it to do like write code and generally helpful things if asked, 
+        but during testing, I found it to do things I didn't want it to do like write code and generally helpful things
+        if asked,
         even with very specific instructions.
       </p>
     </section>
