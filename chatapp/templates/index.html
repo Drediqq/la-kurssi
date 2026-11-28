@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fi">
+<html lang="en">
 
 <head>
   <meta charset="utf-8">
@@ -8,30 +8,213 @@
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
-  <!-- data-base = alipolku (esim. /viikko5), jota app.js käyttää API-kutsuissa -->
+<!-- data-base = alipolku (esim. /viikko5), jota app.js käyttää API-kutsuissa -->
 
 <body data-base="{{ request.script_root }}">
   <main class="chat">
     <section class="chat__header">
       <div>
         <h1>LLM-chat</h1>
-        <p class="chat__meta">Malli: <code>{{ model }}</code> · Nginx → Gunicorn/Flask → Ollama · MariaDB</p>
+        <p class="chat__meta">Model:
+          <code>{{ model }} Codename: GR1.0</code>
+          · Nginx → Gunicorn/Flask → Ollama ·
+          MariaDB
+        </p>
       </div>
-      <button type="button" id="new-chat" class="btn btn--ghost">Uusi keskustelu</button>
+      <button type="button" id="new-chat" class="btn btn--ghost">New chat</button>
     </section>
 
     <section id="messages" class="chat__messages" aria-live="polite">
-      <p class="chat__empty" id="empty-hint">Kirjoita viesti alle aloittaaksesi keskustelun.</p>
+      <p class="chat__empty" id="empty-hint">
+        Write a message to start a conversation!<br>
+        Preferably in english, answers are better that way.<br>
+      </p>
     </section>
 
     <form id="chat-form" class="chat__form" autocomplete="off">
-      <textarea id="message" name="message" rows="2" maxlength="2000"
-        placeholder="Kirjoita viesti… (Enter lähettää, Shift+Enter rivinvaihto)" required></textarea>
-      <button type="submit" id="send" class="btn">Lähetä</button>
+      <textarea id="message" name="message" rows="2" maxlength="2000" placeholder="Write a message..."
+        required></textarea>
+      <button type="submit" id="send" class="btn">Send</button>
     </form>
   </main>
-  <script src="{{ url_for('static', filename='week5.js') }}"></script>
+  <div class="content">
+    <section>
+      <h1>Documentation</h1>
+
+      <h3>
+        Description of the request path (browser → Nginx → application → model / database)
+      </h3>
+      <ul>
+        <p>
+          <li>User requests /week5/</li>
+          <li>Nginx matches the /week5/ location and proxies to Gunicorn/Flask</li>
+          <li>Flask renders the page and handles chat/API requests</li>
+          <li>Flask reads/writes conversation history in mariadb and sends prompts to ollama to generate a reply</li>
+          <li>Ollama returns generated response back through flask and nginx to the browser</li>
+        </p>
+      </ul>
+
+      <h3>
+        Description of the pipeline
+      </h3>
+      <p>
+        Pull requests: Runs the test job (ruff check ., pytest, and bash -n scripts/*.sh) to catch lint, test, or shell
+        syntax issues early without deploying.
+      </p>
+      <p>
+        Push to main: Runs the test job first and once passing, the deploy job runs (serialized with concurrency so two
+        deploys do not overlap). It syncs ./chatapp/ via rsync to /opt/chatapp/app/, runs scripts/deploy.sh <git-sha> to
+          update the virtualenv, apply deploy/sql/schema.sql,
+          validate and reload/restart Nginx with snippets/chatapp.conf,
+          restart chatapp.service, and verify /health over the socket returns the new commit SHA.
+      </p>
+      <p>
+        Deployment verification:
+        The workflow runs a public smoke test against /week5/health checking the exact commit SHA,
+        /week5/
+        checking for id="chat-form", and week5.js.
+      </p>
+
+      <h3>
+        Linux users, database users, file ownership and permissions, and where secrets are stored
+      </h3>
+      <p>
+        Linux users<br>
+        Chatapp user: The web application runs as a dedicated non-login system user with nologin through systemd.<br>
+        Deploy user: Deployment connects over SSH using a standard login user with sudo access using a dedicated deploy key.
+      </p>
+      <p>
+        Database users<br>
+        chatapp db user: A dedicated mariadb user has only privileges needed on 
+        the chatapp database.
+      </p>
+      <p>
+        File ownership and permissions<br>
+        Application files are owned by deploy user and chatapp user with
+        read/execute permissions so chatapp user can run the app without write access to code, and the
+        environment file is restricted to root:chatapp with mode 0640.
+      </p>
+      <p>
+        <strong>Where secrets are stored:</strong><br>
+        CI/CD credentials are stored in github actions secrets, while runtime configuration like
+        database password is stored on the server in env file which is readable only by root
+        and the service user. No secrets or environment files are committed to git.
+      </p>
+
+      <h3>
+        how you added /viikko5/ to Nginx without affecting other sites or pages
+      </h3>
+      <p>
+        Rather than using a separate listening port or public IP for the web path, 
+        the existing Nginx site configuration was kept intact and extended with a new location for /week5/ block.
+        Requests under week5/ are proxied to the Week 5 application's own localhost port or Unix after checking
+        <code>ss -ltnp</code> and <code>systemctl list-units</code> to avoid conflicting ports. 
+        Deployment also checks syntax and conflicts with <code>nginx -t</code>
+      </p>
+
+      <h3>
+        your model choice and the server's memory and disk usage
+      </h3>
+      <p>
+        llama3.2:3b<br>
+        It followed instructions more reliably than other
+        models I tried, while it was a little slower than some non-thinking qwen models. 
+        It wasn't too large or stupid either so I could test it in my local 10+ years old hardware(with 6 gigs of ram set to vm xD).
+
+      </p>
+      <a href="/week3/"">You can find currentish memory and disk usage here</a>
+
+      <h3>
+        if you completed Week 4: whether the chat database is replicated to server B, and why or why not
+      </h3>
+      <p>
+        tldr: It is replicated to server B.<br>
+        Replication is GTID-based without database allow or block filters, 
+        so any new database created on the primary can replicate to Server B
+        if the replica connection is active and authenticated with replication
+        privileges.
+      </p>
+
+    </section>
+
+    <section>
+      <h1>The required test results</h1>
+
+      <h3>/viikko5/ is publicly accessible, and a chat message gets a reply from the local model</h3>
+        <p>
+          I didn't want to suddenly change language, so it's /week5/
+        </p>
+
+        <h3>
+          the conversation is still visible after reloading the page,
+          and a new browser session starts with an empty conversation.
+        </h3>
+        <p>
+          Worked fine on multiple browsers.
+        </p>
+
+        <h3>
+          the model server and the application server are not reachable from the internet
+        </h3>
+        <p>
+          curl to ollama port 11434 times out as expected.
+        </p>
+        <h3>
+          Push to main deploys automatically,
+          and /viikko5/health shows the new commit SHA (at least two successful deployments of different commits)
+        </h3>
+        <p>
+          Push deploys automatically. Assuming it passes all tests.
+
+
+        </p>
+
+        <h3>
+          Commit with a failing test does not get deployed
+        </h3>
+        <p>
+          <a href="https://github.com/Drediqq/la-kurssi/actions/runs/45880215414">Failed run1</a><br>
+          <a href="https://github.com/Drediqq/la-kurssi/actions/runs/45879458920">Failed run2</a>
+        </p>
+
+        <h3>
+          After the server is rebooted, the chat and the model server start again without manual steps
+        </h3>
+        <p>
+          Works fine. No manual steps required.
+        </p>
+
+        <h3>
+          Pages from earlier weeks still work after the deployment
+        </h3>
+        <p>Should be no reason why they wouldn't</p>
+    </section>
+
+    <section>
+      <h1>Evidence</h1>
+      <iframe
+        width=" 315" height="560" src="https://www.youtube.com/embed/SH-yv5Xzctk" title="YouTube Short player"
+        frameborder="0" referrerpolicy="strict-origin-when-cross-origin"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen>
+        </iframe>
+    </section>
+
+    <section>
+      <h1>Problem solved or one thing learned</h1>
+      <p>
+        Github actions are pretty cool! I haven't had time to look into them before.
+        Ai models are ridicilous, I tried my hardest to make this model as unhelpful as possible,
+        but during testing, I found it to do things I didn't want it to do like write code and generally helpful things if asked, even with very specific instructions.
+      </p>
+    </section>
+
+  </div>
+
+
+  <script src=" {{ url_for('static', filename='week5.js' ) }}"></script>
   <script src="/js/scripts.js"></script>
 </body>
+
 
 </html>
